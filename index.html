@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chronos-X 봇 관리 패널</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── 변수 ─── */
+:root {
+  --bg0: #080C0A;
+  --bg1: #0D1410;
+  --bg2: #111A14;
+  --bg3: #162019;
+  --border: #1E3028;
+  --border2: #2A4035;
+  --g0: #00FF7F;
+  --g1: #00CC65;
+  --g2: #009948;
+  --gdim: rgba(0,255,127,0.12);
+  --gdim2: rgba(0,255,127,0.06);
+  --orange: #FF8C42;
+  --red: #FF4560;
+  --yellow: #FFD166;
+  --blue: #06D6FF;
+  --txt: #B8D4C0;
+  --txt2: #5A7A64;
+  --txt3: #3A5040;
+  --white: #E8F4EC;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Pretendard', 'Noto Sans KR', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;min-height:100vh;background:var(--bg0);color:var(--txt);font-family:var(--sans);overflow-x:hidden}
+
+/* ─── 배경 효과 ─── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(0,255,127,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 80% 90%, rgba(0,153,72,0.04) 0%, transparent 70%);
+}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(0,255,127,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,255,127,0.025) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+
+/* ─── 로그인 ─── */
+#loginScreen{
+  position:fixed;inset:0;z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg0);
+}
+.lbox{
+  width:440px;position:relative;
+  background:var(--bg1);
+  border:1px solid var(--border2);
+  border-radius:2px;
+  padding:52px 48px;
+  animation:slideUp .5s cubic-bezier(.16,1,.3,1);
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.lbox::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent 0%,var(--g0) 40%,var(--g1) 60%,transparent 100%);
+}
+.lbox::after{
+  content:'';position:absolute;
+  top:2px;left:50%;transform:translateX(-50%);
+  width:60px;height:1px;
+  background:var(--g0);
+  box-shadow:0 0 16px 4px rgba(0,255,127,0.4);
+}
+.l-eyebrow{
+  font-family:var(--mono);font-size:10px;letter-spacing:4px;
+  color:var(--g1);text-transform:uppercase;margin-bottom:10px;
+}
+.l-title{font-size:24px;font-weight:700;color:var(--white);margin-bottom:6px;line-height:1.2}
+.l-sub{font-size:13px;color:var(--txt2);margin-bottom:36px;line-height:1.6}
+
+.seg{display:flex;background:var(--bg0);border:1px solid var(--border);border-radius:2px;padding:3px;gap:3px;margin-bottom:32px}
+.seg-btn{
+  flex:1;padding:9px;background:transparent;border:none;cursor:pointer;
+  font-family:var(--sans);font-size:13px;color:var(--txt2);border-radius:1px;
+  transition:all .2s;
+}
+.seg-btn.on{background:var(--gdim);color:var(--g0);box-shadow:inset 0 0 0 1px rgba(0,255,127,0.2)}
+
+.fl{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.fl-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--txt2)}
+.fi{
+  width:100%;background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);border-radius:2px;
+  padding:11px 14px;color:var(--white);
+  font-family:var(--mono);font-size:13px;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.fi:focus{border-color:var(--g1);box-shadow:0 0 0 3px rgba(0,255,127,0.08)}
+.fi::placeholder{color:var(--txt3)}
+
+.lbtn{
+  width:100%;margin-top:6px;padding:13px;
+  background:var(--g0);border:none;
+  color:#040A06;font-family:var(--mono);font-size:12px;
+  font-weight:700;letter-spacing:3px;cursor:pointer;border-radius:2px;
+  transition:all .2s;
+}
+.lbtn:hover{background:#33FF99;box-shadow:0 0 24px rgba(0,255,127,0.35)}
+.lbtn:active{transform:scale(.99)}
+.lerr{color:var(--red);font-size:12px;margin-top:12px;text-align:center;min-height:18px;font-family:var(--mono)}
+
+/* ─── 대시보드 ─── */
+#app{display:none;min-height:100vh;position:relative;z-index:1;flex-direction:column}
+#app.show{display:flex}
+
+/* 탑바 */
+.topbar{
+  height:54px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;
+  background:rgba(13,20,16,0.9);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;
+  backdrop-filter:blur(12px);
+  flex-shrink:0;
+}
+.tb-left{display:flex;align-items:center;gap:16px}
+.brand{font-family:var(--mono);font-size:13px;letter-spacing:3px;color:var(--g0)}
+.brand span{color:var(--txt2)}
+.online-pill{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(0,255,127,0.06);border:1px solid rgba(0,255,127,0.15);
+  padding:3px 10px;border-radius:999px;font-size:11px;color:var(--g1);
+  font-family:var(--mono);
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--g0);box-shadow:0 0 6px var(--g0);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.tb-right{display:flex;align-items:center;gap:12px}
+.role-chip{
+  padding:4px 10px;border-radius:2px;font-size:10px;
+  font-family:var(--mono);letter-spacing:1px;font-weight:700;
+}
+.role-chip.super{background:rgba(255,140,66,0.12);color:var(--orange);border:1px solid rgba(255,140,66,0.25)}
+.role-chip.owner{background:rgba(0,255,127,0.08);color:var(--g0);border:1px solid rgba(0,255,127,0.2)}
+.api-chip{
+  font-family:var(--mono);font-size:10px;color:var(--txt2);
+  background:var(--bg2);border:1px solid var(--border);
+  padding:4px 10px;border-radius:2px;max-width:180px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.lout-btn{
+  padding:5px 12px;border:1px solid var(--border2);background:transparent;
+  color:var(--txt2);font-size:11px;cursor:pointer;border-radius:2px;
+  font-family:var(--mono);transition:all .2s;
+}
+.lout-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* 바디 */
+.body{display:flex;flex:1;min-height:0}
+
+/* 사이드바 */
+.sidebar{
+  width:210px;flex-shrink:0;
+  background:var(--bg1);
+  border-right:1px solid var(--border);
+  padding:20px 0;
+  display:flex;flex-direction:column;gap:4px;
+}
+.nav-group{margin-bottom:8px}
+.nav-group-label{
+  font-family:var(--mono);font-size:9px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--txt3);
+  padding:0 16px 6px;
+}
+.nv{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 16px;cursor:pointer;font-size:13px;color:var(--txt2);
+  border-left:2px solid transparent;transition:all .15s;
+  margin:0 0 1px;
+}
+.nv:hover{color:var(--txt);background:var(--gdim2)}
+.nv.active{color:var(--g0);background:var(--gdim);border-left-color:var(--g0)}
+.nv-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.nv-lock{font-size:9px;margin-left:auto;color:var(--txt3)}
+
+/* 메인 */
+.main{flex:1;padding:32px;overflow-y:auto;min-width:0}
+.page{display:none}
+.page.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.pg-header{margin-bottom:28px}
+.pg-title{font-size:22px;font-weight:700;color:var(--white);margin-bottom:4px}
+.pg-sub{font-size:13px;color:var(--txt2)}
+
+/* 카드 */
+.card{
+  background:var(--bg1);border:1px solid var(--border);
+  border-radius:2px;padding:24px;margin-bottom:20px;
+  position:relative;overflow:hidden;
+}
+.card-top{
+  position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--g2),transparent 50%);opacity:.4;
+}
+.c-title{
+  font-size:12px;font-weight:600;color:var(--txt);
+  display:flex;align-items:center;gap:8px;margin-bottom:18px;
+  font-family:var(--mono);letter-spacing:1px;text-transform:uppercase;
+}
+
+/* 스탯 */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:18px 20px}
+.stat-k{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--txt2);margin-bottom:8px}
+.stat-v{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1}
+.stat-v.g{color:var(--g0)}
+.stat-v.r{color:var(--red)}
+.stat-v.o{color:var(--orange)}
+.stat-v.b{color:var(--blue)}
+
+/* 폼 */
+.frow{display:flex;gap:12px;align-items:flex-end;margin-bottom:0}
+.fg{flex:1;display:flex;flex-direction:column;gap:6px}
+.flabel{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt2)}
+.fin,.fsel,.fta{
+  width:100%;background:rgba(255,255,255,0.025);
+  border:1px solid var(--border);border-radius:2px;
+  padding:10px 12px;color:var(--white);
+  font-family:var(--sans);font-size:13px;outline:none;
+  transition:border-color .2s;
+}
+.fin:focus,.fsel:focus,.fta:focus{border-color:var(--g1)}
+.fin::placeholder,.fta::placeholder{color:var(--txt3)}
+.fsel option{background:var(--bg2)}
+.fta{resize:vertical;min-height:88px}
+
+/* 버튼 */
+.btn{padding:10px 18px;border-radius:2px;font-size:11px;font-family:var(--mono);letter-spacing:1.5px;cursor:pointer;transition:all .2s;border:none;white-space:nowrap;font-weight:600}
+.btn-g{background:var(--g0);color:#040A06}
+.btn-g:hover{background:#33FF99;box-shadow:0 0 16px rgba(0,255,127,0.3)}
+.btn-r{background:rgba(255,69,96,0.1);color:var(--red);border:1px solid rgba(255,69,96,0.25)}
+.btn-r:hover{background:rgba(255,69,96,0.2)}
+.btn-o{background:rgba(255,140,66,0.1);color:var(--orange);border:1px solid rgba(255,140,66,0.25)}
+.btn-o:hover{background:rgba(255,140,66,0.2)}
+.btn-ghost{background:transparent;color:var(--txt2);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--border2);color:var(--txt)}
+.btn-b{background:rgba(6,214,255,0.1);color:var(--blue);border:1px solid rgba(6,214,255,0.25)}
+.btn-b:hover{background:rgba(6,214,255,0.18)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* 테이블 */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 14px;font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--txt2);border-bottom:1px solid var(--border)}
+td{padding:12px 14px;border-bottom:1px solid rgba(30,48,40,0.5);vertical-align:middle}
+tr:hover td{background:rgba(0,255,127,0.02)}
+.td-mono{font-family:var(--mono);font-size:11px;color:var(--txt2)}
+.empty-row td{color:var(--txt2);text-align:center;padding:28px;font-size:13px}
+
+/* 뱃지 */
+.badge{display:inline-block;padding:3px 8px;border-radius:2px;font-size:10px;font-family:var(--mono);letter-spacing:.5px;font-weight:700}
+.bsup{background:rgba(255,140,66,0.12);color:var(--orange)}
+.badm{background:rgba(0,255,127,0.08);color:var(--g1)}
+.busr{background:rgba(184,212,192,0.06);color:var(--txt2)}
+.bban{background:rgba(255,69,96,0.12);color:var(--red)}
+
+/* 알림 토스트 */
+#toast{
+  position:fixed;bottom:28px;right:28px;
+  padding:13px 18px;border-radius:2px;
+  font-size:12px;font-family:var(--mono);
+  background:var(--bg2);border:1px solid var(--border2);
+  z-index:9999;opacity:0;transform:translateY(8px);
+  transition:all .3s cubic-bezier(.16,1,.3,1);
+  pointer-events:none;max-width:300px;line-height:1.5;
+}
+#toast.show{opacity:1;transform:translateY(0)}
+#toast.ok{border-color:var(--g1);color:var(--g0)}
+#toast.er{border-color:var(--red);color:var(--red)}
+#toast.wn{border-color:var(--yellow);color:var(--yellow)}
+
+/* 모달 */
+.moverlay{position:fixed;inset:0;background:rgba(4,8,6,0.85);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.moverlay.show{display:flex}
+.modal{background:var(--bg1);border:1px solid var(--border2);border-radius:2px;padding:36px;width:460px;position:relative;animation:slideUp .3s cubic-bezier(.16,1,.3,1)}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),transparent)}
+.m-title{font-size:17px;font-weight:700;color:var(--white);margin-bottom:6px}
+.m-sub{font-size:13px;color:var(--txt2);margin-bottom:24px;line-height:1.6}
+.m-actions{display:flex;gap:10px;justify-content:flex-end}
+
+/* 섹션 헤더 */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+
+/* 구분선 */
+.div{height:1px;background:var(--border);margin:20px 0}
+
+/* 빠른 실행 */
+.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.quick-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:2px;padding:16px 20px;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;gap:12px;
+}
+.quick-card:hover{border-color:var(--border2);background:var(--bg3)}
+.quick-icon{font-size:20px}
+.quick-label{font-size:13px;color:var(--txt);font-weight:500}
+.quick-desc{font-size:11px;color:var(--txt2);margin-top:2px}
+
+/* 로그 */
+.log-row{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;border-bottom:1px solid rgba(30,48,40,0.4);font-size:12px}
+.log-t{font-family:var(--mono);color:var(--txt2);font-size:10px;flex-shrink:0;padding-top:1px;min-width:70px}
+.log-tag{flex-shrink:0;font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:2px;letter-spacing:1px;font-weight:700}
+.lt-ban{background:rgba(255,69,96,.12);color:var(--red)}
+.lt-notice{background:rgba(6,214,255,.1);color:var(--blue)}
+.lt-admin{background:rgba(255,209,102,.1);color:var(--yellow)}
+.lt-system{background:rgba(0,255,127,.08);color:var(--g1)}
+.log-msg{color:var(--txt)}
+
+/* 설정 패널 (관리자 비번 설정) */
+.pw-display{
+  font-family:var(--mono);font-size:13px;
+  background:var(--bg0);border:1px solid var(--border);
+  padding:10px 14px;border-radius:2px;color:var(--g0);
+  letter-spacing:2px;
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ 로그인 ════════════════ -->
+<div id="loginScreen">
+  <div class="lbox">
+    <div class="l-eyebrow">Chronos-X Control Panel</div>
+    <div class="l-title">관리 시스템</div>
+    <div class="l-sub">권한에 맞는 역할을 선택하고<br>비밀번호를 입력하세요.</div>
+
+    <div class="seg">
+      <button class="seg-btn on" id="tab-super" onclick="switchRole('super')">👑 서버 관리자</button>
+      <button class="seg-btn" id="tab-owner" onclick="switchRole('owner')">🏠 방장</button>
+    </div>
+
+    <div class="fl">
+      <div class="fl-label">봇 서버 IP 주소</div>
+      <div style="display:flex;gap:0;align-items:stretch">
+        <input class="fi" id="inApiUrl" placeholder="예: 192.168.0.1 또는 도메인" style="border-radius:2px 0 0 2px;flex:1" />
+        <div style="background:var(--bg0);border:1px solid var(--border);border-left:none;padding:0 12px;display:flex;align-items:center;font-family:var(--mono);font-size:12px;color:var(--g1);border-radius:0 2px 2px 0;white-space:nowrap">:9090</div>
+      </div>
+      <div style="font-size:11px;color:var(--txt2);margin-top:5px">포트 9090이 자동으로 붙습니다</div>
+    </div>
+
+    <div class="fl" id="superPwField">
+      <div class="fl-label">서버 관리자 비밀번호</div>
+      <input class="fi" id="inSuperPw" type="password" placeholder="관리자 비밀번호 입력" />
+    </div>
+
+    <div id="ownerFields" style="display:none">
+      <div class="fl">
+        <div class="fl-label">방장 비밀번호</div>
+        <input class="fi" id="inOwnerPw" type="password" placeholder="방장 비밀번호 입력" />
+      </div>
+      <div class="fl">
+        <div class="fl-label">내 방 ID</div>
+        <input class="fi" id="inRoomId" placeholder="!방코드 명령어로 확인" />
+      </div>
+    </div>
+
+    <button class="lbtn" onclick="doLogin()">[ 접속 ]</button>
+    <div class="lerr" id="lerr">&nbsp;</div>
+  </div>
+</div>
+
+<!-- ════════════════ 대시보드 ════════════════ -->
+<div id="app">
+  <!-- 탑바 -->
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="brand">CHRONOS<span>-X</span></div>
+      <div class="online-pill"><span class="dot"></span>BOT ONLINE</div>
+    </div>
+    <div class="tb-right">
+      <div class="api-chip" id="hApiUrl"></div>
+      <div class="role-chip" id="hRole"></div>
+      <button class="lout-btn" onclick="doLogout()">LOGOUT</button>
+    </div>
+  </div>
+
+  <div class="body">
+    <!-- 사이드바 -->
+    <nav class="sidebar">
+      <div class="nav-group">
+        <div class="nav-group-label">Overview</div>
+        <div class="nv active" onclick="nav('home',this)"><span class="nv-icon">◈</span>대시보드</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">공통 기능</div>
+        <div class="nv" onclick="nav('ban',this)"><span class="nv-icon">⊘</span>밴 / 언밴</div>
+        <div class="nv" onclick="nav('notice',this)"><span class="nv-icon">◎</span>공지 전송</div>
+        <div class="nv" onclick="nav('addadmin',this)"><span class="nv-icon">◉</span>관리자 임명</div>
+        <div class="nv" onclick="nav('restart',this)"><span class="nv-icon">↺</span>봇 재시작</div>
+      </div>
+      <div class="nav-group" id="superNav">
+        <div class="nav-group-label">관리자 전용</div>
+        <div class="nv" onclick="nav('admins',this)"><span class="nv-icon">⬡</span>관리자 목록<span class="nv-lock">🔒</span></div>
+        <div class="nv" onclick="nav('rooms',this)"><span class="nv-icon">▣</span>방 목록<span class="nv-lock">🔒</span></div>
+        <div class="nv" onclick="nav('settings',this)"><span class="nv-icon">◧</span>비밀번호 설정<span class="nv-lock">🔒</span></div>
+        <div class="nv" onclick="nav('logs',this)"><span class="nv-icon">≡</span>활동 로그<span class="nv-lock">🔒</span></div>
+      </div>
+    </nav>
+
+    <!-- 메인 -->
+    <main class="main">
+
+      <!-- 홈 -->
+      <div class="page active" id="page-home">
+        <div class="pg-header">
+          <div class="pg-title">대시보드</div>
+          <div class="pg-sub" id="homeDesc">접속 중...</div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="stat-k">관리 방 수</div><div class="stat-v b" id="stRooms">—</div></div>
+          <div class="stat"><div class="stat-k">등록 관리자</div><div class="stat-v g" id="stAdmins">—</div></div>
+          <div class="stat"><div class="stat-k">차단 유저</div><div class="stat-v r" id="stBans">—</div></div>
+          <div class="stat"><div class="stat-k">봇 상태</div><div class="stat-v g" style="font-size:16px;padding-top:4px">● ONLINE</div></div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="c-title">⚡ 빠른 실행</div>
+          <div class="quick-grid">
+            <div class="quick-card" onclick="nav('ban',null)"><span class="quick-icon">⊘</span><div><div class="quick-label">밴 관리</div><div class="quick-desc">유저 차단 · 차단 해제 · 밴 목록</div></div></div>
+            <div class="quick-card" onclick="nav('notice',null)"><span class="quick-icon">◎</span><div><div class="quick-label">공지 전송</div><div class="quick-desc">방에 공지 메시지 즉시 전송</div></div></div>
+            <div class="quick-card" onclick="nav('addadmin',null)"><span class="quick-icon">◉</span><div><div class="quick-label">관리자 임명</div><div class="quick-desc">유저에게 일반 관리자 권한 부여</div></div></div>
+            <div class="quick-card" onclick="nav('restart',null)"><span class="quick-icon">↺</span><div><div class="quick-label">봇 재시작</div><div class="quick-desc">봇 서버 즉시 재시작</div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="c-title">📡 접속 정보</div>
+          <table>
+            <tr><td style="color:var(--txt2);width:130px;font-size:12px">API 주소</td><td class="td-mono" id="iApi">—</td></tr>
+            <tr><td style="color:var(--txt2);font-size:12px">접속 권한</td><td id="iRole">—</td></tr>
+            <tr><td style="color:var(--txt2);font-size:12px">접속 시각</td><td class="td-mono" id="iTime">—</td></tr>
+            <tr id="iRoomRow" style="display:none"><td style="color:var(--txt2);font-size:12px">방 ID</td><td class="td-mono" id="iRoom">—</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- 밴 관리 -->
+      <div class="page" id="page-ban">
+        <div class="pg-header">
+          <div class="pg-title">밴 / 언밴</div>
+          <div class="pg-sub">유저를 차단하거나 해제합니다.</div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="c-title">🚫 유저 차단</div>
+          <div class="frow" style="gap:12px">
+            <div class="fg"><div class="flabel">닉네임 또는 ID</div><input class="fin" id="banTgt" placeholder="차단할 유저 입력" /></div>
+            <div class="fg"><div class="flabel">차단 사유</div><input class="fin" id="banRsn" placeholder="예: 욕설, 도배" /></div>
+            <button class="btn btn-r" onclick="doBan()">차단 실행</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="c-title">✅ 차단 해제</div>
+          <div class="frow">
+            <div class="fg"><div class="flabel">닉네임 또는 ID</div><input class="fin" id="unbanTgt" placeholder="차단 해제할 유저" /></div>
+            <button class="btn btn-b" onclick="doUnban()">해제 실행</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="sh">
+            <div class="c-title" style="margin:0">📋 차단 목록</div>
+            <button class="btn btn-ghost" onclick="loadBanList()">새로고침</button>
+          </div>
+          <div class="tw">
+            <table><thead><tr><th>#</th><th>닉네임</th><th>ID</th><th>사유</th><th>처리자</th><th>액션</th></tr></thead>
+            <tbody id="banTbody"><tr class="empty-row"><td colspan="6">새로고침을 눌러 목록을 불러오세요</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 공지 전송 -->
+      <div class="page" id="page-notice">
+        <div class="pg-header">
+          <div class="pg-title">공지 전송</div>
+          <div class="pg-sub">봇이 있는 방에 공지를 전송합니다. 방장은 자신의 방에만 전송됩니다.</div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="c-title">📢 공지 작성</div>
+          <div class="fg" style="margin-bottom:14px">
+            <div class="flabel">전송 범위</div>
+            <select class="fsel" id="ntcScope">
+              <option value="all">전체 방 (봇이 있는 모든 방)</option>
+              <option value="room">특정 방 ID</option>
+            </select>
+          </div>
+          <div class="fg" id="ntcRoomGrp" style="display:none;margin-bottom:14px">
+            <div class="flabel">방 ID</div>
+            <input class="fin" id="ntcRoomId" placeholder="방 ID 입력" />
+          </div>
+          <div class="fg" style="margin-bottom:16px">
+            <div class="flabel">메시지</div>
+            <textarea class="fta" id="ntcMsg" placeholder="공지 내용을 입력하세요..."></textarea>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <button class="btn btn-g" onclick="doNotice()">공지 전송</button>
+            <span style="font-size:11px;color:var(--txt2)">⚠ 전체 전송 시 모든 방에 즉시 발송됩니다</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 관리자 임명 -->
+      <div class="page" id="page-addadmin">
+        <div class="pg-header">
+          <div class="pg-title">관리자 임명</div>
+          <div class="pg-sub">유저에게 일반 관리자 권한을 부여합니다.</div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="c-title">➕ 임명하기</div>
+          <div style="margin-bottom:12px;padding:12px 14px;background:var(--bg0);border:1px solid var(--border);border-radius:2px;font-size:12px;color:var(--txt2);line-height:1.6">
+            ⚠ 임명된 일반 관리자는 밴/언밴, 공지 전송 등 방장과 동일한 기능을 사용할 수 있습니다.<br>
+            관리자 <strong style="color:var(--txt)">해제</strong>는 서버 관리자 전용 메뉴에서 가능합니다.
+          </div>
+          <div class="frow">
+            <div class="fg"><div class="flabel">닉네임 또는 ID</div><input class="fin" id="addAdmTgt" placeholder="임명할 유저 입력" /></div>
+            <button class="btn btn-g" onclick="doAddAdmin()">임명 실행</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 봇 재시작 -->
+      <div class="page" id="page-restart">
+        <div class="pg-header">
+          <div class="pg-title">봇 재시작</div>
+          <div class="pg-sub">봇 서버를 즉시 재시작합니다.</div>
+        </div>
+        <div class="card" style="border-color:rgba(255,209,102,0.2)">
+          <div class="card-top" style="background:linear-gradient(90deg,var(--yellow),transparent 50%)"></div>
+          <div class="c-title">↺ 재시작 실행</div>
+          <p style="font-size:13px;color:var(--txt2);margin-bottom:20px;line-height:1.7">
+            봇 서버를 재시작하면 잠깐 동안 봇이 응답하지 않을 수 있습니다.<br>
+            자동으로 재연결되며, 약 5~10초 후 정상 동작합니다.
+          </p>
+          <button class="btn btn-o" onclick="showRestartConfirm()">↺ 지금 재시작</button>
+        </div>
+      </div>
+
+      <!-- 관리자 목록 (관리자 전용) -->
+      <div class="page" id="page-admins">
+        <div class="pg-header">
+          <div class="pg-title">관리자 목록</div>
+          <div class="pg-sub">서버 관리자 전용 메뉴 — 관리자 해제 포함.</div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="sh">
+            <div class="c-title" style="margin:0">📋 전체 목록</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" onclick="loadAdminList()">새로고침</button>
+              <button class="btn btn-r" onclick="confirmAct('clearAdmins')">일반 관리자 전체 해제</button>
+            </div>
+          </div>
+          <div class="tw">
+            <table><thead><tr><th>#</th><th>닉네임</th><th>권한</th><th>방 코드</th><th>액션</th></tr></thead>
+            <tbody id="admTbody"><tr class="empty-row"><td colspan="5">새로고침을 누르세요</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 방 목록 (관리자 전용) -->
+      <div class="page" id="page-rooms">
+        <div class="pg-header">
+          <div class="pg-title">방 목록</div>
+          <div class="pg-sub">봇이 배치된 모든 방 목록입니다.</div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="sh">
+            <div class="c-title" style="margin:0">🏠 방 목록</div>
+            <button class="btn btn-ghost" onclick="loadRooms()">새로고침</button>
+          </div>
+          <div class="tw">
+            <table><thead><tr><th>#</th><th>방 ID</th><th>공지 보내기</th></tr></thead>
+            <tbody id="roomTbody"><tr class="empty-row"><td colspan="3">새로고침을 누르세요</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 비밀번호 설정 (관리자 전용) -->
+      <div class="page" id="page-settings">
+        <div class="pg-header">
+          <div class="pg-title">비밀번호 설정</div>
+          <div class="pg-sub">대시보드 로그인 비밀번호를 변경합니다. 서버 관리자 전용.</div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="c-title">🔐 서버 관리자 비밀번호 변경</div>
+          <div class="fg" style="margin-bottom:12px"><div class="flabel">새 비밀번호</div><input class="fin" id="newSuperPw" type="password" placeholder="새 비밀번호 입력" /></div>
+          <div class="fg" style="margin-bottom:16px"><div class="flabel">비밀번호 확인</div><input class="fin" id="newSuperPw2" type="password" placeholder="다시 입력" /></div>
+          <button class="btn btn-g" onclick="changePw('super')">변경</button>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div class="c-title">🔑 방장 비밀번호 변경</div>
+          <div class="fg" style="margin-bottom:12px"><div class="flabel">새 비밀번호</div><input class="fin" id="newOwnerPw" type="password" placeholder="새 비밀번호 입력" /></div>
+          <div class="fg" style="margin-bottom:16px"><div class="flabel">비밀번호 확인</div><input class="fin" id="newOwnerPw2" type="password" placeholder="다시 입력" /></div>
+          <button class="btn btn-b" onclick="changePw('owner')">변경</button>
+        </div>
+        <div class="card" style="border-color:rgba(255,69,96,0.2)">
+          <div class="card-top" style="background:linear-gradient(90deg,var(--red),transparent 50%)"></div>
+          <div class="c-title">⚠ 현재 설정된 비밀번호 (보안 주의)</div>
+          <p style="font-size:11px;color:var(--txt2);margin-bottom:12px">실제 서버 배포 시 이 섹션은 제거하세요.</p>
+          <table>
+            <tr><td style="color:var(--txt2);font-size:12px;width:140px">관리자 비번</td><td><div class="pw-display" id="showSuperPw">—</div></td></tr>
+            <tr><td style="color:var(--txt2);font-size:12px">방장 비번</td><td><div class="pw-display" id="showOwnerPw">—</div></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- 활동 로그 -->
+      <div class="page" id="page-logs">
+        <div class="pg-header">
+          <div class="pg-title">활동 로그</div>
+          <div class="pg-sub">현재 세션의 작업 이력입니다.</div>
+        </div>
+        <div class="card">
+          <div class="card-top"></div>
+          <div id="logContainer">
+            <div class="empty-row" style="padding:28px;text-align:center;color:var(--txt2);font-size:13px">아직 기록 없음</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- 재시작 확인 모달 -->
+<div class="moverlay" id="moverlay">
+  <div class="modal">
+    <div class="m-title" id="mTitle">확인</div>
+    <div class="m-sub" id="mSub">이 작업을 수행하시겠습니까?</div>
+    <div class="m-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">취소</button>
+      <button class="btn btn-r" id="mOkBtn" onclick="execAction()">실행</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════
+//  상태
+// ════════════════════════════════════════════════
+const S = {
+  role: 'super',
+  apiUrl: '',
+  roomId: '',
+  logs: [],
+  pendingAction: null,
+  // 비밀번호 (실제 운영 시 서버에서 관리 권장)
+  passwords: {
+    super: 'super1234',
+    owner: 'owner1234'
+  }
+};
+
+// ════════════════════════════════════════════════
+//  유틸
+// ════════════════════════════════════════════════
+function toast(msg, type='ok') {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=`show ${type}`;
+  clearTimeout(el._t); el._t=setTimeout(()=>el.className='',3200);
+}
+function addLog(tag,msg){
+  const t=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  S.logs.unshift({tag,msg,t});
+  renderLogs();
+}
+function renderLogs(){
+  const c=document.getElementById('logContainer');
+  if(!S.logs.length){c.innerHTML='<div class="empty-row" style="padding:28px;text-align:center;color:var(--txt2);font-size:13px">아직 기록 없음</div>';return;}
+  c.innerHTML=S.logs.map(l=>`
+    <div class="log-row">
+      <span class="log-t">${l.t}</span>
+      <span class="log-tag lt-${l.tag}">${l.tag.toUpperCase()}</span>
+      <span class="log-msg">${l.msg}</span>
+    </div>`).join('');
+}
+function maskId(id){const s=String(id||'');return s.length<=4?'****':s.slice(0,4)+'****';}
+
+// ── API 호출 ──
+async function api(path,method='POST',body=null){
+  try{
+    // 인증 정보 자동 주입
+    let finalBody = body;
+    if(method==='POST' && path !== '/dashboard/login'){
+      finalBody = {
+        ...(body||{}),
+        role: S.role,
+        password: S.role==='super' ? S.passwords.super : S.passwords.owner,
+        roomId: S.roomId || (body&&body.roomId) || undefined
+      };
+    }
+    const r=await fetch(S.apiUrl+path,{
+      method, headers:{'Content-Type':'application/json'},
+      body:finalBody?JSON.stringify(finalBody):undefined
+    });
+    if(r.ok){try{return await r.json()}catch{return{success:true}}}
+    return null;
+  }catch{return null;}
+}
+
+// ════════════════════════════════════════════════
+//  로그인
+// ════════════════════════════════════════════════
+function switchRole(r){
+  S.role=r;
+  document.getElementById('tab-super').classList.toggle('on',r==='super');
+  document.getElementById('tab-owner').classList.toggle('on',r==='owner');
+  document.getElementById('superPwField').style.display=r==='super'?'flex':'none';
+  document.getElementById('ownerFields').style.display=r==='owner'?'block':'none';
+}
+
+async function doLogin(){
+  const rawUrl=document.getElementById('inApiUrl').value.trim().replace(/:9090$/,'').replace(/:\d+$/,'');
+  if(!rawUrl){setErr('봇 서버 IP를 입력하세요.');return;}
+  S.apiUrl='http://'+rawUrl.replace(/^https?:\/\//,'')+':9090';
+
+  if(S.role==='super'){
+    const pw=document.getElementById('inSuperPw').value;
+    if(!pw){setErr('비밀번호를 입력하세요.');return;}
+
+    // 서버 인증 시도
+    const res=await api('/dashboard/login','POST',{role:'super',password:pw});
+    if(res?.success || pw===S.passwords.super){
+      if(!res?.success) toast('⚠ 데모 모드 (API 미연결)','wn');
+      enterDash('super');
+    }else{setErr('비밀번호가 올바르지 않습니다.');}
+
+  }else{
+    const pw=document.getElementById('inOwnerPw').value;
+    const rid=document.getElementById('inRoomId').value.trim();
+    if(!pw){setErr('비밀번호를 입력하세요.');return;}
+    if(!rid){setErr('방 ID를 입력하세요.');return;}
+
+    const res=await api('/dashboard/login','POST',{role:'owner',password:pw,roomId:rid});
+    if(res?.success || pw===S.passwords.owner){
+      if(!res?.success) toast('⚠ 데모 모드 (API 미연결)','wn');
+      S.roomId=rid;
+      enterDash('owner');
+    }else{setErr('비밀번호 또는 방 ID가 올바르지 않습니다.');}
+  }
+}
+
+function setErr(m){const e=document.getElementById('lerr');e.textContent=m;setTimeout(()=>e.textContent=' ',4000);}
+
+function enterDash(role){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').classList.add('show');
+
+  // 입력한 비밀번호를 세션에 보관 (api() 자동 주입용)
+  if(role==='super') S.passwords.super = document.getElementById('inSuperPw').value;
+  else S.passwords.owner = document.getElementById('inOwnerPw').value;
+  const url=S.apiUrl; const rname=role==='super'?'👑 서버 관리자':'🏠 방장';
+  document.getElementById('hApiUrl').textContent=url;
+  document.getElementById('hRole').textContent=rname;
+  document.getElementById('hRole').className='role-chip '+(role==='super'?'super':'owner');
+  document.getElementById('iApi').textContent=url;
+  document.getElementById('iRole').textContent=rname;
+  document.getElementById('iTime').textContent=new Date().toLocaleString('ko-KR');
+  document.getElementById('homeDesc').textContent=
+    role==='super'
+    ?'서버 관리자로 접속했습니다. 모든 기능을 사용할 수 있습니다.'
+    :`방장으로 접속했습니다. 방 ID: ${S.roomId}`;
+
+  if(role==='owner'){
+    document.getElementById('superNav').style.display='none';
+    document.getElementById('iRoomRow').style.display='';
+    document.getElementById('iRoom').textContent=S.roomId;
+    // 방장: 공지 전송 전체 옵션 제거
+    const sel=document.getElementById('ntcScope');
+    sel.innerHTML='<option value="room">내 방 (방 ID: '+S.roomId+')</option>';
+    sel.disabled=true;
+    document.getElementById('ntcRoomId').value=S.roomId;
+  }
+
+  // 설정 페이지 현재 비번 표시
+  document.getElementById('showSuperPw').textContent=S.passwords.super;
+  document.getElementById('showOwnerPw').textContent=S.passwords.owner;
+
+  loadStats();
+  addLog('system','로그인 ('+rname+') '+url);
+}
+
+function doLogout(){
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').classList.remove('show');
+  S.role='super';S.roomId='';S.logs=[];S.apiUrl='';S.pendingAction=null;
+  document.getElementById('superNav').style.display='block';
+  document.getElementById('iRoomRow').style.display='none';
+  // 공지 옵션 초기화
+  const sel=document.getElementById('ntcScope');
+  sel.innerHTML='<option value="all">전체 방 (봇이 있는 모든 방)</option><option value="room">특정 방 ID</option>';
+  sel.disabled=false;
+  switchRole('super');
+}
+
+// ════════════════════════════════════════════════
+//  내비게이션
+// ════════════════════════════════════════════════
+function nav(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nv').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(el)el.classList.add('active');
+  else{// 사이드바 매칭
+    document.querySelectorAll('.nv').forEach(n=>{if(n.getAttribute('onclick')?.includes("'"+name+"'"))n.classList.add('active');});
+  }
+}
+
+// ════════════════════════════════════════════════
+//  통계
+// ════════════════════════════════════════════════
+async function loadStats(){
+  const d=await api('/dashboard/stats','GET');
+  document.getElementById('stRooms').textContent=d?.rooms??'?';
+  document.getElementById('stAdmins').textContent=d?.admins??'?';
+  document.getElementById('stBans').textContent=d?.bans??'?';
+}
+
+// ════════════════════════════════════════════════
+//  밴
+// ════════════════════════════════════════════════
+async function doBan(){
+  const tgt=document.getElementById('banTgt').value.trim();
+  const rsn=document.getElementById('banRsn').value.trim()||'사유 없음';
+  if(!tgt){toast('차단할 유저를 입력하세요.','er');return;}
+  const res=await api('/dashboard/ban','POST',{target:tgt,reason:rsn,role:S.role});
+  if(res?.success){toast(`✅ ${tgt} 차단 완료`,'ok');addLog('ban',`차단: ${tgt} (사유: ${rsn})`);}
+  else{toast(`API 미연결 — 봇에 직접: !ban ${tgt}`,'wn');addLog('ban',`(오프라인) 차단 시도: ${tgt}`);}
+  document.getElementById('banTgt').value='';document.getElementById('banRsn').value='';
+  loadBanList();
+}
+async function doUnban(){
+  const tgt=document.getElementById('unbanTgt').value.trim();
+  if(!tgt){toast('해제할 유저를 입력하세요.','er');return;}
+  const res=await api('/dashboard/unban','POST',{target:tgt,role:S.role});
+  if(res?.success){toast(`✅ ${tgt} 차단 해제`,'ok');addLog('ban',`해제: ${tgt}`);}
+  else toast(`API 미연결 — 봇에 직접: !unban ${tgt}`,'wn');
+  document.getElementById('unbanTgt').value='';
+  loadBanList();
+}
+async function loadBanList(){
+  const d=await api('/dashboard/banlist','GET');
+  const tb=document.getElementById('banTbody');
+  if(d?.list?.length){
+    tb.innerHTML=d.list.map((u,i)=>`
+      <tr>
+        <td>${i+1}</td>
+        <td>${u.name||'알수없음'}</td>
+        <td class="td-mono">${maskId(u.id)}</td>
+        <td>${u.reason||'—'}</td>
+        <td style="font-size:12px;color:var(--txt2)">${u.admin||'—'}</td>
+        <td><button class="btn btn-ghost" style="padding:5px 10px;font-size:10px" onclick="qUnban('${u.id}','${u.name}')">해제</button></td>
+      </tr>`).join('');
+  }else if(d?.list){
+    tb.innerHTML='<tr class="empty-row"><td colspan="6">차단된 유저가 없습니다</td></tr>';
+  }else{
+    tb.innerHTML='<tr class="empty-row"><td colspan="6">API 미연결 상태입니다</td></tr>';
+  }
+}
+async function qUnban(id,name){
+  const r=await api('/dashboard/unban','POST',{target:id,role:S.role});
+  toast(r?.success?`✅ ${name} 해제`:`봇에 직접: !unban ${id}`,r?.success?'ok':'wn');
+  loadBanList();
+}
+
+// ════════════════════════════════════════════════
+//  공지
+// ════════════════════════════════════════════════
+document.getElementById('ntcScope').addEventListener('change',function(){
+  document.getElementById('ntcRoomGrp').style.display=this.value==='room'?'flex':'none';
+});
+async function doNotice(){
+  const msg=document.getElementById('ntcMsg').value.trim();
+  if(!msg){toast('공지 내용을 입력하세요.','er');return;}
+  const scope=document.getElementById('ntcScope').value;
+  const rid=scope==='room'?document.getElementById('ntcRoomId').value.trim():null;
+  if(scope==='room'&&!rid){toast('방 ID를 입력하세요.','er');return;}
+  const res=await api('/dashboard/notice','POST',{content:msg,scope,roomId:rid,role:S.role});
+  if(res?.success){toast('✅ 공지 전송 완료','ok');addLog('notice',`공지 (${scope==='all'?'전체':'방'+rid}): ${msg.slice(0,30)}`);}
+  else toast(`API 미연결 — 봇에 직접: !공지 ${msg.slice(0,20)}`,'wn');
+  document.getElementById('ntcMsg').value='';
+}
+
+// ════════════════════════════════════════════════
+//  관리자 임명
+// ════════════════════════════════════════════════
+async function doAddAdmin(){
+  const tgt=document.getElementById('addAdmTgt').value.trim();
+  if(!tgt){toast('임명할 유저를 입력하세요.','er');return;}
+  const res=await api('/dashboard/addadmin','POST',{target:tgt,role:S.role});
+  if(res?.success){toast(`✅ ${tgt} 관리자 임명`,'ok');addLog('admin',`관리자 임명: ${tgt}`);}
+  else toast(`API 미연결 — 봇에 직접: !관리자임명 @${tgt}`,'wn');
+  document.getElementById('addAdmTgt').value='';
+}
+
+// ════════════════════════════════════════════════
+//  봇 재시작
+// ════════════════════════════════════════════════
+function showRestartConfirm(){
+  S.pendingAction='restart';
+  document.getElementById('mTitle').textContent='봇 재시작';
+  document.getElementById('mSub').textContent='봇 서버를 즉시 재시작합니다. 잠시 동안 봇이 응답하지 않습니다. 계속하시겠습니까?';
+  document.getElementById('mOkBtn').textContent='재시작';
+  document.getElementById('mOkBtn').className='btn btn-o';
+  document.getElementById('moverlay').classList.add('show');
+}
+
+// ════════════════════════════════════════════════
+//  관리자 목록 (관리자 전용)
+// ════════════════════════════════════════════════
+async function loadAdminList(){
+  if(S.role!=='super'){toast('서버 관리자만 사용 가능합니다.','er');return;}
+  const d=await api('/dashboard/adminlist','GET');
+  const tb=document.getElementById('admTbody');
+  if(d?.list?.length){
+    tb.innerHTML=d.list.map((a,i)=>`
+      <tr>
+        <td>${i+1}</td>
+        <td>${a.name||'—'}</td>
+        <td><span class="badge ${a.role==='super'?'bsup':'badm'}">${a.role==='super'?'서버관리자':'일반관리자'}</span></td>
+        <td class="td-mono">${a.room||'—'}</td>
+        <td>${a.role!=='super'?`<button class="btn btn-r" style="padding:5px 10px;font-size:10px" onclick="removeAdm('${a.id}','${a.name}')">해제</button>`:'<span style="font-size:11px;color:var(--txt2)">보호</span>'}</td>
+      </tr>`).join('');
+  }else tb.innerHTML='<tr class="empty-row"><td colspan="5">API 미연결 상태입니다</td></tr>';
+}
+async function removeAdm(id,name){
+  const r=await api('/dashboard/removeadmin','POST',{target:id});
+  toast(r?.success?`✅ ${name} 해제`:`봇에 직접: !관리자해제 @${name}`,r?.success?'ok':'wn');
+  addLog('admin',`관리자 해제: ${name}`);
+  loadAdminList();
+}
+
+// ════════════════════════════════════════════════
+//  방 목록 (관리자 전용)
+// ════════════════════════════════════════════════
+async function loadRooms(){
+  if(S.role!=='super'){toast('서버 관리자만 사용 가능합니다.','er');return;}
+  const d=await api('/dashboard/rooms','GET');
+  const tb=document.getElementById('roomTbody');
+  if(d?.rooms?.length){
+    tb.innerHTML=d.rooms.map((r,i)=>`
+      <tr>
+        <td>${i+1}</td>
+        <td class="td-mono">${r}</td>
+        <td><button class="btn btn-ghost" style="padding:5px 10px;font-size:10px" onclick="quickNotice('${r}')">공지</button></td>
+      </tr>`).join('');
+  }else tb.innerHTML='<tr class="empty-row"><td colspan="3">API 미연결 상태입니다</td></tr>';
+}
+function quickNotice(rid){
+  nav('notice',null);
+  document.getElementById('ntcScope').value='room';
+  document.getElementById('ntcRoomGrp').style.display='flex';
+  document.getElementById('ntcRoomId').value=rid;
+  toast('방 ID가 설정되었습니다.','ok');
+}
+
+// ════════════════════════════════════════════════
+//  비밀번호 변경 (관리자 전용)
+// ════════════════════════════════════════════════
+async function changePw(who){
+  if(S.role!=='super'){toast('서버 관리자만 사용 가능합니다.','er');return;}
+  const p1=document.getElementById(`new${who==='super'?'Super':'Owner'}Pw`).value;
+  const p2=document.getElementById(`new${who==='super'?'Super':'Owner'}Pw2`).value;
+  if(!p1){toast('비밀번호를 입력하세요.','er');return;}
+  if(p1!==p2){toast('비밀번호가 일치하지 않습니다.','er');return;}
+  if(p1.length<6){toast('비밀번호는 6자 이상이어야 합니다.','er');return;}
+
+  // 서버에 저장 시도
+  const res=await api('/dashboard/setpw','POST',{role:who,password:p1});
+  S.passwords[who]=p1;
+  // 화면 업데이트
+  document.getElementById(`show${who==='super'?'Super':'Owner'}Pw`).textContent=p1;
+  toast(`✅ ${who==='super'?'관리자':'방장'} 비밀번호 변경 완료`,'ok');
+  addLog('system',`${who} 비밀번호 변경`);
+  document.getElementById(`new${who==='super'?'Super':'Owner'}Pw`).value='';
+  document.getElementById(`new${who==='super'?'Super':'Owner'}Pw2`).value='';
+}
+
+// ════════════════════════════════════════════════
+//  확인 모달 (관리자 전용 위험 작업)
+// ════════════════════════════════════════════════
+function confirmAct(action){
+  if(S.role!=='super'){toast('서버 관리자만 사용 가능합니다.','er');return;}
+  S.pendingAction=action;
+  const map={
+    clearAdmins:['일반 관리자 전체 해제','모든 일반 관리자 권한을 해제합니다. 복구할 수 없습니다.'],
+    restart:['봇 재시작','봇 서버를 즉시 재시작합니다.'],
+  };
+  const[t,s]=map[action]||['확인','계속하시겠습니까?'];
+  document.getElementById('mTitle').textContent=t;
+  document.getElementById('mSub').textContent=s;
+  document.getElementById('mOkBtn').textContent='실행';
+  document.getElementById('mOkBtn').className='btn btn-r';
+  document.getElementById('moverlay').classList.add('show');
+}
+function closeModal(){document.getElementById('moverlay').classList.remove('show');S.pendingAction=null;}
+async function execAction(){
+  const a=S.pendingAction; closeModal(); if(!a)return;
+  if(a==='restart'){
+    const r=await api('/dashboard/restart','POST');
+    toast(r?.success?'✅ 재시작 명령 전송':'API 미연결 — 봇에 직접: !재시작',r?.success?'ok':'wn');
+    addLog('system','봇 재시작 명령');
+  }else if(a==='clearAdmins'){
+    const r=await api('/dashboard/clearadmins','POST');
+    toast(r?.success?'✅ 일반 관리자 전체 해제':'API 미연결 — 봇에 직접: !관리자초기화',r?.success?'ok':'wn');
+    addLog('admin','일반 관리자 전체 해제');
+  }
+}
+
+// ════════════════════════════════════════════════
+//  키보드 단축키
+// ════════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const ls=document.getElementById('loginScreen');
+    if(ls.style.display!=='none')doLogin();
+  }
+});
+</script>
+</body>
+</html>
