@@ -696,25 +696,39 @@ function renderLogs(){
 function maskId(id){const s=String(id||'');return s.length<=4?'****':s.slice(0,4)+'****';}
 
 // ── API 호출 ──
-async function api(path,method='POST',body=null){
-  try{
-    // 인증 정보 자동 주입
-    let finalBody = body;
-    if(method==='POST' && path !== '/dashboard/login'){
-      finalBody = {
+async function api(path, method='POST', body=null){
+  try {
+    const opts = { method, headers: {'Content-Type':'application/json'} };
+
+    // POST 요청에는 인증 정보 자동 주입 (로그인 제외)
+    if(method === 'POST'){
+      const base = (path === '/dashboard/login') ? (body||{}) : {
         ...(body||{}),
-        role: S.role,
+        role:     S.role,
         password: S.role==='super' ? S.passwords.super : S.passwords.owner,
-        roomId: S.roomId || (body&&body.roomId) || undefined
+        roomId:   S.roomId || undefined
       };
+      opts.body = JSON.stringify(base);
     }
-    const r=await fetch(S.apiUrl+path,{
-      method, headers:{'Content-Type':'application/json'},
-      body:finalBody?JSON.stringify(finalBody):undefined
-    });
-    if(r.ok){try{return await r.json()}catch{return{success:true}}}
-    return null;
-  }catch{return null;}
+
+    const r = await fetch(S.apiUrl + path, opts);
+
+    // 응답 파싱
+    const text = await r.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch(e) {}
+
+    if(r.ok && json) return json;
+    if(r.ok)         return { success: true };
+
+    // 401 → 비밀번호 오류 구분
+    if(r.status === 401) return { success: false, _status: 401, error: json?.error || '비밀번호 불일치' };
+    return { success: false, _status: r.status, error: json?.error || '서버 오류' };
+
+  } catch(e) {
+    // 네트워크 오류 (서버 꺼짐, CORS 등)
+    return { success: false, _status: 0, error: '서버에 연결할 수 없습니다: ' + e.message };
+  }
 }
 
 // ════════════════════════════════════════════════
@@ -729,32 +743,46 @@ function switchRole(r){
 }
 
 async function doLogin(){
-  // 현재 페이지를 서빙한 서버 주소를 그대로 사용 (CORS 문제 없음)
+  // 봇 서버가 이 HTML을 직접 서빙하므로 → 같은 호스트:9090 사용
   S.apiUrl = window.location.protocol + '//' + window.location.hostname + ':9090';
 
-  if(S.role==='super'){
-    const pw=document.getElementById('inSuperPw').value;
-    if(!pw){setErr('비밀번호를 입력하세요.');return;}
+  const lbtn = document.querySelector('.lbtn');
+  lbtn.textContent = '접속 중...';
+  lbtn.disabled = true;
 
-    // 서버 인증 시도
-    const res=await api('/dashboard/login','POST',{role:'super',password:pw});
-    if(res?.success || pw===S.passwords.super){
-      if(!res?.success) toast('⚠ 데모 모드 (API 미연결)','wn');
-      enterDash('super');
-    }else{setErr('비밀번호가 올바르지 않습니다.');}
+  try {
+    if(S.role === 'super'){
+      const pw = document.getElementById('inSuperPw').value.trim();
+      if(!pw){ setErr('비밀번호를 입력하세요.'); return; }
 
-  }else{
-    const pw=document.getElementById('inOwnerPw').value;
-    const rid=document.getElementById('inRoomId').value.trim();
-    if(!pw){setErr('비밀번호를 입력하세요.');return;}
-    if(!rid){setErr('방 ID를 입력하세요.');return;}
+      const res = await api('/dashboard/login', 'POST', { role:'super', password:pw });
 
-    const res=await api('/dashboard/login','POST',{role:'owner',password:pw,roomId:rid});
-    if(res?.success || pw===S.passwords.owner){
-      if(!res?.success) toast('⚠ 데모 모드 (API 미연결)','wn');
-      S.roomId=rid;
-      enterDash('owner');
-    }else{setErr('비밀번호 또는 방 ID가 올바르지 않습니다.');}
+      if(res.success){
+        S.passwords.super = pw;
+        enterDash('super');
+      } else {
+        setErr(res.error || '비밀번호가 올바르지 않습니다.');
+      }
+
+    } else {
+      const pw  = document.getElementById('inOwnerPw').value.trim();
+      const rid = document.getElementById('inRoomId').value.trim();
+      if(!pw){ setErr('비밀번호를 입력하세요.'); return; }
+      if(!rid){ setErr('방 ID를 입력하세요.'); return; }
+
+      const res = await api('/dashboard/login', 'POST', { role:'owner', password:pw, roomId:rid });
+
+      if(res.success){
+        S.passwords.owner = pw;
+        S.roomId = rid;
+        enterDash('owner');
+      } else {
+        setErr(res.error || '비밀번호 또는 방 ID가 올바르지 않습니다.');
+      }
+    }
+  } finally {
+    lbtn.textContent = '[ 접속 ]';
+    lbtn.disabled = false;
   }
 }
 
