@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chronos-X Bot</title>
+<title>Chronos Bot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -418,28 +418,26 @@
     margin: 0 auto;
   }
 
-  .contact-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 48px;
-    align-items: start;
-  }
+  /* contact solo layout */
 
   @media (max-width: 768px) {
-    .contact-grid { grid-template-columns: 1fr; }
     nav { padding: 0 20px; }
     .nav-links { gap: 16px; }
-    #intro, #contact { padding: 80px 20px; }
+    #intro, #contact, #blog { padding: 80px 20px; }
     .hero-stats { gap: 24px; }
   }
 
-  .contact-info h3 {
+  .contact-solo {
+    max-width: 600px;
+  }
+
+  .contact-solo h3 {
     font-size: 22px;
     font-weight: 700;
     margin-bottom: 12px;
   }
 
-  .contact-info p {
+  .contact-solo p {
     color: var(--muted);
     font-size: 14px;
     line-height: 1.8;
@@ -1056,7 +1054,7 @@
 
 <!-- ══ NAV ══ -->
 <nav>
-  <div class="nav-logo" onclick="scrollTo(0,0)">CHRONOS-X</div>
+  <div class="nav-logo" onclick="scrollTo(0,0)">CHRONOS</div>
   <ul class="nav-links">
     <li><a href="#intro">소개</a></li>
     <li><a href="#contact">문의</a></li>
@@ -1092,7 +1090,7 @@
 <section id="intro">
   <div class="section-label">About</div>
   <h2 class="section-title reveal">강력한 카카오 오픈채팅 봇</h2>
-  <p class="section-desc reveal">Chronos-X는 AI 대화, 멘션 감지, 입퇴장 기록, 채팅 통계까지 — 오픈채팅 운영에 필요한 모든 것을 하나로 제공합니다.</p>
+  <p class="section-desc reveal">Chronos Bot은 AI 대화, 멘션 감지, 입퇴장 기록, 채팅 통계까지 — 오픈채팅 운영에 필요한 모든 것을 하나로 제공합니다.</p>
 
   <div class="feature-grid">
     <div class="feature-card reveal">
@@ -1156,61 +1154,34 @@
   <div class="section-label">Contact</div>
   <h2 class="section-title reveal">문의하기</h2>
 
-  <div class="contact-grid">
-    <div class="contact-info reveal">
-      <h3>봇 설치부터 커스텀까지<br>무엇이든 물어보세요.</h3>
-      <p>봇 설치 문의, 기능 요청, 버그 제보 등 어떤 내용이든 편하게 연락주세요. 빠르게 답변드리겠습니다.</p>
-      <div class="contact-links">
-        <a class="contact-link" href="https://open.kakao.com/me/Chronosadmin" target="_blank">
-          <div class="contact-link-icon">💬</div>
-          <div class="contact-link-text">
-            <strong>카카오톡 1:1 오픈채팅</strong>
-            <span>@Chronosadmin</span>
-          </div>
-          <div class="contact-link-arrow">›</div>
-        </a>
-        <a class="contact-link" href="https://open.kakao.com/o/g7BG0whi" target="_blank">
-          <div class="contact-link-icon">🤖</div>
-          <div class="contact-link-text">
-            <strong>봇 설치 오픈채팅</strong>
-            <span>Chronos-X 봇 설치 & 문의방</span>
-          </div>
-          <div class="contact-link-arrow">›</div>
-        </a>
-        <a class="contact-link" href="https://successful-piranha-e29.notion.site/Chronos-X-Bot-2f9dd672094780b1aa29e5b2429697b3" target="_blank">
-          <div class="contact-link-icon">📄</div>
-          <div class="contact-link-text">
-            <strong>이용약관 & 공식 문서</strong>
-            <span>Notion 페이지 확인</span>
-          </div>
-          <div class="contact-link-arrow">›</div>
-        </a>
-      </div>
-    </div>
-
-    <div class="contact-form-wrap reveal">
-      <h3>📮 메시지 보내기</h3>
-      <div class="form-group">
-        <label>이름 / 닉네임</label>
-        <input type="text" id="cName" placeholder="홍길동">
-      </div>
-      <div class="form-group">
-        <label>문의 유형</label>
-        <select id="cType">
-          <option value="">선택해주세요</option>
-          <option>봇 설치 문의</option>
-          <option>기능 요청</option>
-          <option>버그 제보</option>
-          <option>커스텀 봇 제작</option>
-          <option>기타</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>내용</label>
-        <textarea id="cMsg" placeholder="문의 내용을 자세히 입력해주세요..."></textarea>
-      </div>
-      <button class="form-submit" onclick="submitContact()">✈ 메시지 전송</button>
-      <div class="form-msg" id="formMsg">✅ 메시지가 저장되었습니다! 카카오톡으로도 연락주시면 더 빠르게 답변드릴게요.</div>
+  <div class="contact-solo reveal">
+    <h3>봇 설치부터 커스텀까지<br>무엇이든 물어보세요.</h3>
+    <p>봇 설치 문의, 기능 요청, 버그 제보 등 어떤 내용이든 편하게 연락주세요. 빠르게 답변드리겠습니다.</p>
+    <div class="contact-links">
+      <a class="contact-link" href="https://open.kakao.com/me/Chronosadmin" target="_blank">
+        <div class="contact-link-icon">💬</div>
+        <div class="contact-link-text">
+          <strong>카카오톡 1:1 오픈채팅</strong>
+          <span>@Chronosadmin</span>
+        </div>
+        <div class="contact-link-arrow">›</div>
+      </a>
+      <a class="contact-link" href="https://open.kakao.com/o/g7BG0whi" target="_blank">
+        <div class="contact-link-icon">🤖</div>
+        <div class="contact-link-text">
+          <strong>봇 설치 오픈채팅</strong>
+          <span>Chronos Bot 설치 & 문의방</span>
+        </div>
+        <div class="contact-link-arrow">›</div>
+      </a>
+      <a class="contact-link" href="https://successful-piranha-e29.notion.site/Chronos-X-Bot-2f9dd672094780b1aa29e5b2429697b3" target="_blank">
+        <div class="contact-link-icon">📄</div>
+        <div class="contact-link-text">
+          <strong>이용약관 & 공식 문서</strong>
+          <span>Notion 페이지 확인</span>
+        </div>
+        <div class="contact-link-arrow">›</div>
+      </a>
     </div>
   </div>
 </section>
@@ -1266,7 +1237,7 @@
 </section>
 
 <footer>
-  <div class="footer-logo">CHRONOS-X</div>
+  <div class="footer-logo">CHRONOS</div>
   <div class="footer-copy">© 2025 Chronos Bot. All rights reserved.</div>
   <div class="footer-links">
     <a href="#intro">소개</a>
@@ -1401,8 +1372,8 @@ function loadPosts() {
       {
         id: 1,
         cat: 'update',
-        title: 'Chronos-X Bot Ver 1.5 출시 🎉',
-        body: 'Chronos-X 봇의 새로운 버전 1.5가 출시되었습니다!\n\n주요 변경사항:\n- Chronos Malware Analyzer 통합\n- 첫중현 기능 추가 (입장/퇴장/강퇴 카드 디자인 개선)\n- AI 대화 모드 개선 (단체/1:1 구분)\n- 채팅 통계 그래프 디자인 업그레이드\n- 멘션 감지 시스템 안정화\n\n앞으로도 더 좋은 기능으로 찾아오겠습니다 :)',
+        title: 'Chronos Bot Ver 1.5 출시 🎉',
+        body: 'Chronos Bot의 새로운 버전 1.5가 출시되었습니다!\n\n주요 변경사항:\n- Chronos Malware Analyzer 통합\n- 첫중현 기능 추가 (입장/퇴장/강퇴 카드 디자인 개선)\n- AI 대화 모드 개선 (단체/1:1 구분)\n- 채팅 통계 그래프 디자인 업그레이드\n- 멘션 감지 시스템 안정화\n\n앞으로도 더 좋은 기능으로 찾아오겠습니다 :)',
         tags: ['업데이트', 'v1.5', '출시'],
         date: '2025-01-10',
         views: 128
@@ -1411,7 +1382,7 @@ function loadPosts() {
         id: 2,
         cat: 'notice',
         title: '봇 설치 안내 및 이용약관',
-        body: 'Chronos-X 봇 설치는 아래 링크를 통해 진행해주세요.\nhttps://open.kakao.com/o/g7BG0whi\n\n이용약관은 Notion 페이지에서 확인 가능합니다.\n\n관리자 문의: !관리자연결 명령어 또는 https://open.kakao.com/me/Chronosadmin',
+        body: 'Chronos Bot 설치는 아래 링크를 통해 진행해주세요.\nhttps://open.kakao.com/o/g7BG0whi\n\n이용약관은 Notion 페이지에서 확인 가능합니다.\n\n관리자 문의: !관리자연결 명령어 또는 https://open.kakao.com/me/Chronosadmin',
         tags: ['공지', '설치', '안내'],
         date: '2025-01-01',
         views: 87
