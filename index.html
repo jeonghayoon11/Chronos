@@ -3,801 +3,1580 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chronos-X 관리 패널</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<title>Chronos-X Bot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#07100A;--s1:#0C1A10;--s2:#112016;--s3:#162B1C;
-  --bd:#1C3524;--bd2:#2A4A34;
-  --g:#00FF7F;--g2:#00CC65;--g3:#009948;
-  --r:#FF4560;--y:#FFD166;--b:#06D6FF;--o:#FF8C42;
-  --t:#B8D4C0;--t2:#5A8068;--t3:#3A5040;--w:#E8F4EC;
-  --mono:'IBM Plex Mono',monospace;
-  --sans:'Noto Sans KR',sans-serif;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--t);font-family:var(--sans);overflow-x:hidden}
+  :root {
+    --bg: #030712;
+    --bg2: #0a0f1e;
+    --surface: #0d1424;
+    --border: #1a2540;
+    --accent: #00d2ff;
+    --accent2: #7c3aed;
+    --accent3: #06ffa5;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --glow: 0 0 30px rgba(0, 210, 255, 0.3);
+  }
 
-/* 배경 그리드 */
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:linear-gradient(rgba(0,255,127,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,127,.02) 1px,transparent 1px);
-  background-size:40px 40px}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* ── 로그인 ── */
-#login{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg)}
-.lbox{width:420px;background:var(--s1);border:1px solid var(--bd2);border-radius:4px;padding:48px;position:relative;animation:up .4s ease}
-@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.lbox::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent)}
-.eye{font-family:var(--mono);font-size:10px;letter-spacing:4px;color:var(--g2);margin-bottom:8px}
-.ltitle{font-size:24px;font-weight:700;color:var(--w);margin-bottom:6px}
-.lsub{font-size:13px;color:var(--t2);margin-bottom:28px;line-height:1.6}
-.seg{display:flex;background:var(--bg);border:1px solid var(--bd);border-radius:3px;padding:3px;gap:3px;margin-bottom:24px}
-.stab{flex:1;padding:9px;background:transparent;border:none;cursor:pointer;font-family:var(--sans);font-size:13px;color:var(--t2);border-radius:2px;transition:all .2s}
-.stab.on{background:rgba(0,255,127,.1);color:var(--g);box-shadow:inset 0 0 0 1px rgba(0,255,127,.2)}
-.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
-.fl{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t2)}
-.fi{width:100%;background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:3px;padding:11px 13px;color:var(--w);font-family:var(--mono);font-size:13px;outline:none;transition:border-color .2s}
-.fi:focus{border-color:var(--g2)}
-.fi::placeholder{color:var(--t3)}
-.lbtn{width:100%;margin-top:8px;padding:13px;background:var(--g);border:none;color:#040A06;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:3px;cursor:pointer;border-radius:3px;transition:all .2s}
-.lbtn:hover{background:#33FF99;box-shadow:0 0 20px rgba(0,255,127,.3)}
-.lbtn:disabled{opacity:.5;cursor:not-allowed}
-.lerr{min-height:20px;margin-top:10px;text-align:center;font-size:12px;font-family:var(--mono);color:var(--r)}
+  html { scroll-behavior: smooth; }
 
-/* ── 앱 ── */
-#app{display:none;min-height:100vh;flex-direction:column;position:relative;z-index:1}
-#app.on{display:flex}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    overflow-x: hidden;
+  }
 
-/* 탑바 */
-.top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(12,26,16,.95);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);flex-shrink:0}
-.brand{font-family:var(--mono);font-size:13px;letter-spacing:3px;color:var(--g)}
-.brand span{color:var(--t2)}
-.pill{display:flex;align-items:center;gap:5px;background:rgba(0,255,127,.06);border:1px solid rgba(0,255,127,.15);padding:3px 10px;border-radius:99px;font-size:11px;color:var(--g2);font-family:var(--mono)}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);animation:bl 2s infinite}
-@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
-.tright{display:flex;align-items:center;gap:10px}
-.rchip{padding:4px 10px;border-radius:2px;font-size:10px;font-family:var(--mono);letter-spacing:1px;font-weight:700}
-.rchip.super{background:rgba(255,140,66,.12);color:var(--o);border:1px solid rgba(255,140,66,.25)}
-.rchip.owner{background:rgba(0,255,127,.08);color:var(--g);border:1px solid rgba(0,255,127,.2)}
-.out{padding:5px 12px;border:1px solid var(--bd2);background:transparent;color:var(--t2);font-size:11px;cursor:pointer;border-radius:2px;font-family:var(--mono);transition:all .2s}
-.out:hover{border-color:var(--r);color:var(--r)}
+  /* ── 배경 파티클 캔버스 ── */
+  #bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
 
-/* 레이아웃 */
-.wrap{display:flex;flex:1;min-height:0}
+  /* ── 스크롤바 ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
 
-/* 사이드바 */
-.sb{width:200px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--bd);padding:16px 0}
-.sg{margin-bottom:6px}
-.sgl{font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--t3);padding:0 14px 6px}
-.ni{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;font-size:13px;color:var(--t2);border-left:2px solid transparent;transition:all .15s;margin-bottom:1px}
-.ni:hover{color:var(--t);background:rgba(0,255,127,.04)}
-.ni.on{color:var(--g);background:rgba(0,255,127,.08);border-left-color:var(--g)}
-.nico{font-size:13px;width:16px;text-align:center;flex-shrink:0}
-.nlk{font-size:9px;margin-left:auto;color:var(--t3)}
+  /* ══════════════════════════
+     NAV
+  ══════════════════════════ */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    height: 64px;
+    background: rgba(3,7,18,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
 
-/* 메인 */
-.main{flex:1;padding:28px;overflow-y:auto;min-width:0}
-.pg{display:none}
-.pg.on{display:block;animation:fin .2s ease}
-@keyframes fin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.pgh{margin-bottom:24px}
-.pgt{font-size:21px;font-weight:700;color:var(--w);margin-bottom:3px}
-.pgs{font-size:13px;color:var(--t2)}
+  .nav-logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 18px;
+    letter-spacing: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    cursor: pointer;
+  }
 
-/* 카드 */
-.card{background:var(--s1);border:1px solid var(--bd);border-radius:3px;padding:22px;margin-bottom:16px;position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--g3),transparent 60%);opacity:.5}
-.ct{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--t);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
 
-/* 스탯 */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-.stat{background:var(--s2);border:1px solid var(--bd);border-radius:3px;padding:16px 18px}
-.sk{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t2);margin-bottom:6px}
-.sv{font-family:var(--mono);font-size:24px;font-weight:700}
-.sv.g{color:var(--g)} .sv.r{color:var(--r)} .sv.b{color:var(--b)} .sv.o{color:var(--o)}
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    position: relative;
+  }
 
-/* 폼 */
-.frow{display:flex;gap:10px;align-items:flex-end}
-.fg2{flex:1;display:flex;flex-direction:column;gap:5px}
-.fl2{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--t2)}
-.fin2,.fsel,.fta{width:100%;background:rgba(255,255,255,.025);border:1px solid var(--bd);border-radius:2px;padding:9px 11px;color:var(--w);font-family:var(--sans);font-size:13px;outline:none;transition:border-color .2s}
-.fin2:focus,.fsel:focus,.fta:focus{border-color:var(--g2)}
-.fin2::placeholder,.fta::placeholder{color:var(--t3)}
-.fsel option{background:var(--s2)}
-.fta{resize:vertical;min-height:80px}
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0;
+    width: 0; height: 1px;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
 
-/* 버튼 */
-.btn{padding:9px 16px;border-radius:2px;font-size:11px;font-family:var(--mono);letter-spacing:1px;cursor:pointer;transition:all .2s;border:none;white-space:nowrap;font-weight:600}
-.bg{background:var(--g);color:#040A06}.bg:hover{background:#33FF99;box-shadow:0 0 14px rgba(0,255,127,.3)}
-.br{background:rgba(255,69,96,.1);color:var(--r);border:1px solid rgba(255,69,96,.25)}.br:hover{background:rgba(255,69,96,.2)}
-.bb{background:rgba(6,214,255,.08);color:var(--b);border:1px solid rgba(6,214,255,.2)}.bb:hover{background:rgba(6,214,255,.15)}
-.bo{background:rgba(255,140,66,.08);color:var(--o);border:1px solid rgba(255,140,66,.2)}.bo:hover{background:rgba(255,140,66,.15)}
-.bgh{background:transparent;color:var(--t2);border:1px solid var(--bd)}.bgh:hover{border-color:var(--bd2);color:var(--t)}
-.btn:disabled{opacity:.4;cursor:not-allowed}
+  .nav-links a:hover { color: var(--accent); }
+  .nav-links a:hover::after { width: 100%; }
 
-/* 테이블 */
-.tw{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;padding:8px 12px;font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t2);border-bottom:1px solid var(--bd)}
-td{padding:11px 12px;border-bottom:1px solid rgba(28,53,36,.5);vertical-align:middle}
-tr:hover td{background:rgba(0,255,127,.02)}
-.tm{font-family:var(--mono);font-size:11px;color:var(--t2)}
-.empty td{color:var(--t2);text-align:center;padding:24px;font-size:13px}
+  /* ══════════════════════════
+     SECTIONS WRAPPER
+  ══════════════════════════ */
+  section {
+    position: relative;
+    z-index: 1;
+  }
 
-/* 뱃지 */
-.badge{display:inline-block;padding:2px 8px;border-radius:2px;font-size:10px;font-family:var(--mono);font-weight:700}
-.bsup{background:rgba(255,140,66,.12);color:var(--o)}
-.badm{background:rgba(0,255,127,.08);color:var(--g2)}
-.bban{background:rgba(255,69,96,.12);color:var(--r)}
-.bok{background:rgba(0,255,127,.06);color:var(--t2)}
+  /* ══════════════════════════
+     HERO
+  ══════════════════════════ */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 80px 24px 60px;
+  }
 
-/* 토스트 */
-#toast{position:fixed;bottom:24px;right:24px;padding:12px 18px;border-radius:3px;font-size:12px;font-family:var(--mono);background:var(--s2);border:1px solid var(--bd2);z-index:9999;opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none;max-width:280px;line-height:1.5}
-#toast.on{opacity:1;transform:translateY(0)}
-#toast.ok{border-color:var(--g2);color:var(--g)}
-#toast.er{border-color:var(--r);color:var(--r)}
-#toast.wn{border-color:var(--y);color:var(--y)}
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border: 1px solid rgba(0, 210, 255, 0.3);
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.8s ease both;
+  }
 
-/* 모달 */
-.mo{position:fixed;inset:0;background:rgba(4,8,5,.85);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.mo.on{display:flex}
-.mbox{background:var(--s1);border:1px solid var(--bd2);border-radius:3px;padding:32px;width:440px;animation:up .3s ease;position:relative}
-.mbox::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--r),transparent)}
-.mt{font-size:16px;font-weight:700;color:var(--w);margin-bottom:6px}
-.ms{font-size:13px;color:var(--t2);margin-bottom:20px;line-height:1.6}
-.ma{display:flex;gap:8px;justify-content:flex-end}
+  .badge-dot {
+    width: 6px; height: 6px;
+    background: var(--accent3);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
 
-/* 섹션헤더 */
-.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
 
-/* info 박스 */
-.info-box{background:var(--bg);border:1px solid var(--bd);border-radius:2px;padding:10px 13px;font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6}
+  .hero-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(52px, 10vw, 110px);
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -2px;
+    animation: fadeUp 0.8s ease 0.15s both;
+  }
 
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+  .hero-title .line1 {
+    display: block;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 60%, var(--accent3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-title .line2 {
+    display: block;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.2);
+    font-size: 0.6em;
+    margin-top: 8px;
+    letter-spacing: 8px;
+  }
+
+  .hero-sub {
+    margin-top: 32px;
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 480px;
+    line-height: 1.8;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+
+  .hero-version {
+    display: inline-block;
+    background: rgba(0,210,255,0.1);
+    border: 1px solid rgba(0,210,255,0.2);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    margin-left: 6px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 48px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.8s ease 0.45s both;
+  }
+
+  .btn-primary {
+    padding: 14px 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    color: #000;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 40px rgba(0,210,255,0.4);
+  }
+
+  .btn-outline {
+    padding: 14px 32px;
+    background: transparent;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 1px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* stats row */
+  .hero-stats {
+    display: flex;
+    gap: 48px;
+    margin-top: 80px;
+    animation: fadeUp 0.8s ease 0.6s both;
+  }
+
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ══════════════════════════
+     INTRO / ABOUT
+  ══════════════════════════ */
+  #intro {
+    padding: 120px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+
+  .section-desc {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.9;
+    max-width: 560px;
+    margin-bottom: 64px;
+  }
+
+  /* feature grid */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+    cursor: default;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .feature-card:hover { border-color: rgba(0,210,255,0.3); transform: translateY(-4px); }
+  .feature-card:hover::before { opacity: 1; }
+
+  .feature-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .feature-icon.blue { background: rgba(0,210,255,0.12); }
+  .feature-icon.purple { background: rgba(124,58,237,0.12); }
+  .feature-icon.green { background: rgba(6,255,165,0.12); }
+  .feature-icon.orange { background: rgba(251,146,60,0.12); }
+
+  .feature-name {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+
+  .feature-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* command list */
+  .cmd-list {
+    margin-top: 80px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+  }
+
+  .cmd-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .cmd-header h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--accent);
+  }
+
+  .cmd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .cmd-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(0,210,255,0.04);
+    border: 1px solid rgba(0,210,255,0.1);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    transition: background 0.2s;
+  }
+
+  .cmd-item:hover { background: rgba(0,210,255,0.1); }
+
+  .cmd-text { color: var(--accent); }
+  .cmd-desc { color: var(--muted); font-size: 11px; font-family: 'Noto Sans KR', sans-serif; }
+
+  /* ══════════════════════════
+     CONTACT
+  ══════════════════════════ */
+  #contact {
+    padding: 120px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .contact-grid { grid-template-columns: 1fr; }
+    nav { padding: 0 20px; }
+    .nav-links { gap: 16px; }
+    #intro, #contact { padding: 80px 20px; }
+    .hero-stats { gap: 24px; }
+  }
+
+  .contact-info h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .contact-info p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 32px;
+  }
+
+  .contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .contact-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 14px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .contact-link:hover { border-color: var(--accent); transform: translateX(4px); }
+
+  .contact-link-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    background: rgba(0,210,255,0.1);
+    flex-shrink: 0;
+  }
+
+  .contact-link-text { flex: 1; }
+  .contact-link-text strong { display: block; font-size: 13px; margin-bottom: 2px; }
+  .contact-link-text span { font-size: 11px; color: var(--muted); }
+  .contact-link-arrow { color: var(--muted); font-size: 18px; }
+
+  /* contact form */
+  .contact-form-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+  }
+
+  .contact-form-wrap h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+
+  .form-group { margin-bottom: 18px; }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,210,255,0.08);
+  }
+
+  .form-group select option { background: var(--bg2); }
+
+  .form-group textarea { height: 120px; }
+
+  .form-submit {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    color: #000;
+    font-weight: 700;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .form-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  .form-msg {
+    display: none;
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .form-msg.success {
+    display: block;
+    background: rgba(6,255,165,0.1);
+    border: 1px solid rgba(6,255,165,0.3);
+    color: var(--accent3);
+  }
+
+  /* ══════════════════════════
+     BLOG
+  ══════════════════════════ */
+  #blog {
+    padding: 120px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .blog-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .blog-write-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(0,210,255,0.1);
+    border: 1px solid rgba(0,210,255,0.3);
+    border-radius: 8px;
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .blog-write-btn:hover { background: rgba(0,210,255,0.2); }
+
+  /* admin login */
+  .admin-area {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .admin-input {
+    padding: 8px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    width: 160px;
+    transition: border-color 0.2s;
+  }
+
+  .admin-input:focus { border-color: var(--accent); }
+
+  .admin-btn {
+    padding: 8px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .admin-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .admin-btn.active { background: rgba(0,210,255,0.1); border-color: var(--accent); color: var(--accent); }
+
+  .admin-status {
+    font-size: 12px;
+    color: var(--accent3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* post editor */
+  .post-editor {
+    background: var(--surface);
+    border: 1px solid rgba(0,210,255,0.2);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 40px;
+    display: none;
+  }
+
+  .post-editor.visible { display: block; animation: fadeUp 0.4s ease both; }
+
+  .editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .editor-header h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .editor-close {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .editor-close:hover { background: rgba(255,80,80,0.15); color: #ff5050; }
+
+  .editor-input,
+  .editor-tag-input {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    outline: none;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+
+  .editor-input:focus, .editor-tag-input:focus { border-color: var(--accent); }
+
+  .editor-title { font-size: 18px; font-weight: 700; }
+
+  .editor-body {
+    width: 100%;
+    height: 200px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    outline: none;
+    resize: vertical;
+    margin-bottom: 14px;
+    line-height: 1.7;
+    transition: border-color 0.2s;
+  }
+
+  .editor-body:focus { border-color: var(--accent); }
+
+  .editor-cat-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .cat-btn {
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+
+  .cat-btn.selected {
+    background: rgba(0,210,255,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .editor-submit {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    color: #000;
+    font-weight: 700;
+    font-size: 13px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s;
+  }
+
+  .editor-submit:hover { opacity: 0.85; }
+
+  /* blog posts list */
+  .blog-filter {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+
+  .filter-btn.active {
+    background: rgba(0,210,255,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  .post-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    cursor: pointer;
+    transition: border-color 0.3s, transform 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .post-card:hover { border-color: rgba(0,210,255,0.3); transform: translateY(-3px); }
+
+  .post-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top left, rgba(0,210,255,0.05), transparent 60%);
+    pointer-events: none;
+  }
+
+  .post-cat {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .post-cat.update { background: rgba(0,210,255,0.12); color: var(--accent); }
+  .post-cat.notice { background: rgba(251,146,60,0.12); color: #fb923c; }
+  .post-cat.tip { background: rgba(6,255,165,0.12); color: var(--accent3); }
+  .post-cat.log { background: rgba(124,58,237,0.12); color: #a78bfa; }
+
+  .post-title {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+
+  .post-preview {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .post-meta-left { display: flex; align-items: center; gap: 8px; }
+  .post-views { display: flex; align-items: center; gap: 4px; }
+
+  .post-delete {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: rgba(255,80,80,0.1);
+    border: 1px solid rgba(255,80,80,0.3);
+    color: #ff5050;
+    font-size: 14px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    z-index: 10;
+  }
+
+  .post-delete:hover { background: rgba(255,80,80,0.25); }
+  .is-admin .post-delete { display: flex; }
+
+  /* modal */
+  .post-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .post-modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .post-modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    max-width: 680px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 40px;
+    transform: translateY(20px);
+    transition: transform 0.3s;
+  }
+
+  .post-modal-overlay.open .post-modal { transform: translateY(0); }
+
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-post-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .modal-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .modal-divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 24px;
+  }
+
+  .modal-body {
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  /* no posts */
+  .no-posts {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .no-posts p { font-size: 14px; margin-top: 8px; }
+
+  /* ══════════════════════════
+     FOOTER
+  ══════════════════════════ */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 40px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .footer-logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .footer-copy { font-size: 12px; color: var(--muted); }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { font-size: 12px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--accent); }
+
+  /* ══════════════════════════
+     DIVIDER
+  ══════════════════════════ */
+  .section-divider {
+    position: relative;
+    z-index: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0 48px;
+  }
+
+  /* toast */
+  .toast {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    color: var(--accent);
+    font-size: 13px;
+    z-index: 9999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── 입장 애니메이션 ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .reveal.in-view { opacity: 1; transform: translateY(0); }
 </style>
 </head>
 <body>
 
-<!-- ══ 로그인 ══ -->
-<div id="login">
-  <div class="lbox">
-    <div class="eye">CHRONOS-X CONTROL PANEL</div>
-    <div class="ltitle">관리 시스템</div>
-    <div class="lsub">역할을 선택하고 비밀번호를 입력하세요.</div>
-    <div class="seg">
-      <button class="stab on" id="ts" onclick="setRole('super')">👑 서버 관리자</button>
-      <button class="stab" id="to" onclick="setRole('owner')">🏠 방장</button>
-    </div>
-    <div id="sf">
-      <div class="fg">
-        <div class="fl">서버 관리자 비밀번호</div>
-        <input class="fi" id="spw" type="password" placeholder="비밀번호 입력" autocomplete="current-password" />
-      </div>
-    </div>
-    <div id="of" style="display:none">
-      <div class="fg">
-        <div class="fl">방장 비밀번호</div>
-        <input class="fi" id="opw" type="password" placeholder="비밀번호 입력" autocomplete="current-password" />
-      </div>
-      <div class="fg">
-        <div class="fl">내 방 ID</div>
-        <input class="fi" id="rid" placeholder="!방코드 로 확인" />
-      </div>
-    </div>
-    <button class="lbtn" id="lbtn" onclick="doLogin()">[ 접속 ]</button>
-    <div class="lerr" id="lerr"></div>
+<!-- 배경 파티클 -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 포스트 모달 -->
+<div class="post-modal-overlay" id="postModal" onclick="closeModal(event)">
+  <div class="post-modal" style="position:relative;">
+    <button class="modal-close" onclick="closeModal(null)">✕</button>
+    <div id="modalContent"></div>
   </div>
 </div>
 
-<!-- ══ 앱 ══ -->
-<div id="app">
-  <div class="top">
-    <div style="display:flex;align-items:center;gap:14px">
-      <div class="brand">CHRONOS<span>-X</span></div>
-      <div class="pill"><span class="dot"></span>BOT ONLINE</div>
-    </div>
-    <div class="tright">
-      <div id="hchip" class="rchip"></div>
-      <button class="out" onclick="doLogout()">LOGOUT</button>
-    </div>
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-logo" onclick="scrollTo(0,0)">CHRONOS-X</div>
+  <ul class="nav-links">
+    <li><a href="#intro">소개</a></li>
+    <li><a href="#contact">문의</a></li>
+    <li><a href="#blog">블로그</a></li>
+  </ul>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="hero-badge"><span class="badge-dot"></span> VER 1.5 · LIVE</div>
+  <h1 class="hero-title">
+    <span class="line1">CHRONOS</span>
+    <span class="line2">KAKAO BOT</span>
+  </h1>
+  <p class="hero-sub">
+    카카오 오픈채팅을 위한 스마트 봇<span class="hero-version">v1.5</span><br>
+    AI 대화 · 멘션 감지 · 입퇴장 관리 · 실시간 분석
+  </p>
+  <div class="hero-actions">
+    <a href="https://open.kakao.com/o/g7BG0whi" target="_blank" class="btn-primary">봇 설치하기 →</a>
+    <a href="#intro" class="btn-outline">기능 살펴보기</a>
   </div>
-  <div class="wrap">
-    <!-- 사이드바 -->
-    <nav class="sb">
-      <div class="sg">
-        <div class="sgl">OVERVIEW</div>
-        <div class="ni on" data-p="home" onclick="go('home',this)"><span class="nico">◈</span>대시보드</div>
-      </div>
-      <div class="sg">
-        <div class="sgl">공통 기능</div>
-        <div class="ni" data-p="ban" onclick="go('ban',this)"><span class="nico">⊘</span>밴 / 언밴</div>
-        <div class="ni" data-p="notice" onclick="go('notice',this)"><span class="nico">◎</span>공지 전송</div>
-        <div class="ni" data-p="addadmin" onclick="go('addadmin',this)"><span class="nico">◉</span>관리자 임명</div>
-        <div class="ni" data-p="restart" onclick="go('restart',this)"><span class="nico">↺</span>봇 재시작</div>
-      </div>
-      <div class="sg" id="supernav">
-        <div class="sgl">관리자 전용</div>
-        <div class="ni" data-p="admins" onclick="go('admins',this)"><span class="nico">⬡</span>관리자 목록<span class="nlk">🔒</span></div>
-        <div class="ni" data-p="rooms" onclick="go('rooms',this)"><span class="nico">▣</span>방 목록<span class="nlk">🔒</span></div>
-        <div class="ni" data-p="setpw" onclick="go('setpw',this)"><span class="nico">◧</span>비밀번호 설정<span class="nlk">🔒</span></div>
-      </div>
-    </nav>
-    <!-- 메인 -->
-    <main class="main">
-
-      <!-- 홈 -->
-      <div class="pg on" id="pg-home">
-        <div class="pgh"><div class="pgt">대시보드</div><div class="pgs" id="hdesc">환영합니다.</div></div>
-        <div class="stats">
-          <div class="stat"><div class="sk">관리 방 수</div><div class="sv b" id="st-rooms">—</div></div>
-          <div class="stat"><div class="sk">등록 관리자</div><div class="sv g" id="st-admins">—</div></div>
-          <div class="stat"><div class="sk">차단 유저</div><div class="sv r" id="st-bans">—</div></div>
-          <div class="stat"><div class="sk">봇 상태</div><div class="sv g" style="font-size:15px;padding-top:2px">● ONLINE</div></div>
-        </div>
-        <div class="card">
-          <div class="card::before"></div>
-          <div class="ct">⚡ 빠른 실행</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn bg" onclick="go('ban',null)">밴 관리</button>
-            <button class="btn bgh" onclick="go('notice',null)">공지 전송</button>
-            <button class="btn bgh" onclick="go('addadmin',null)">관리자 임명</button>
-            <button class="btn bo" onclick="go('restart',null)">봇 재시작</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 밴 -->
-      <div class="pg" id="pg-ban">
-        <div class="pgh"><div class="pgt">밴 / 언밴</div><div class="pgs">유저를 차단하거나 해제합니다.</div></div>
-        <div class="card">
-          <div class="ct">🚫 유저 차단</div>
-          <div class="frow" style="margin-bottom:0">
-            <div class="fg2"><div class="fl2">닉네임 또는 ID</div><input class="fin2" id="ban-tgt" placeholder="차단할 유저" /></div>
-            <div class="fg2"><div class="fl2">차단 사유</div><input class="fin2" id="ban-rsn" placeholder="예: 욕설, 도배" /></div>
-            <button class="btn br" onclick="doBan()">차단</button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="ct">✅ 차단 해제</div>
-          <div class="frow" style="margin-bottom:0">
-            <div class="fg2"><div class="fl2">닉네임 또는 ID</div><input class="fin2" id="uban-tgt" placeholder="해제할 유저" /></div>
-            <button class="btn bb" onclick="doUnban()">해제</button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="sh">
-            <div class="ct" style="margin:0">📋 차단 목록</div>
-            <button class="btn bgh" onclick="loadBans()">새로고침</button>
-          </div>
-          <div class="tw">
-            <table><thead><tr><th>#</th><th>닉네임</th><th>ID</th><th>사유</th><th>처리자</th><th>해제</th></tr></thead>
-            <tbody id="ban-tbody"><tr class="empty"><td colspan="6">새로고침을 눌러 목록 로드</td></tr></tbody></table>
-          </div>
-        </div>
-      </div>
-
-      <!-- 공지 -->
-      <div class="pg" id="pg-notice">
-        <div class="pgh"><div class="pgt">공지 전송</div><div class="pgs" id="ntc-sub">봇이 있는 방에 공지를 전송합니다.</div></div>
-        <div class="card">
-          <div class="ct">📢 공지 작성</div>
-          <div class="fg2" style="margin-bottom:12px">
-            <div class="fl2">전송 범위</div>
-            <select class="fsel" id="ntc-scope">
-              <option value="all">전체 방 (봇이 있는 모든 방)</option>
-              <option value="room">특정 방 ID</option>
-            </select>
-          </div>
-          <div class="fg2" id="ntc-rid-grp" style="display:none;margin-bottom:12px">
-            <div class="fl2">방 ID</div>
-            <input class="fin2" id="ntc-rid" placeholder="방 ID 입력" />
-          </div>
-          <div class="fg2" style="margin-bottom:14px">
-            <div class="fl2">메시지 내용</div>
-            <textarea class="fta" id="ntc-msg" placeholder="공지 내용 입력..."></textarea>
-          </div>
-          <button class="btn bg" onclick="doNotice()">전송</button>
-        </div>
-      </div>
-
-      <!-- 관리자 임명 -->
-      <div class="pg" id="pg-addadmin">
-        <div class="pgh"><div class="pgt">관리자 임명</div><div class="pgs">유저에게 일반 관리자 권한을 부여합니다.</div></div>
-        <div class="card">
-          <div class="ct">➕ 임명하기</div>
-          <div class="info-box">⚠ 임명된 관리자는 밴/언밴, 공지, 관리자 임명 기능을 사용할 수 있습니다.<br>관리자 해제는 서버 관리자 전용 메뉴에서 가능합니다.</div>
-          <div class="frow" style="margin-bottom:0">
-            <div class="fg2"><div class="fl2">닉네임 또는 ID</div><input class="fin2" id="adm-tgt" placeholder="임명할 유저" /></div>
-            <button class="btn bg" onclick="doAddAdmin()">임명</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 봇 재시작 -->
-      <div class="pg" id="pg-restart">
-        <div class="pgh"><div class="pgt">봇 재시작</div><div class="pgs">봇 서버를 즉시 재시작합니다.</div></div>
-        <div class="card" style="border-color:rgba(255,209,102,.2)">
-          <div class="ct">↺ 재시작</div>
-          <p style="font-size:13px;color:var(--t2);margin-bottom:18px;line-height:1.7">봇 재시작 후 약 5~10초간 응답이 없을 수 있습니다.<br>자동으로 재연결됩니다.</p>
-          <button class="btn bo" onclick="openModal('restart','봇 재시작','지금 봇 서버를 재시작하시겠습니까?')">↺ 지금 재시작</button>
-        </div>
-      </div>
-
-      <!-- 관리자 목록 -->
-      <div class="pg" id="pg-admins">
-        <div class="pgh"><div class="pgt">관리자 목록</div><div class="pgs">서버 관리자 전용 — 관리자 해제 포함.</div></div>
-        <div class="card">
-          <div class="sh">
-            <div class="ct" style="margin:0">📋 전체 목록</div>
-            <div style="display:flex;gap:8px">
-              <button class="btn bgh" onclick="loadAdmins()">새로고침</button>
-              <button class="btn br" onclick="openModal('clearadmins','일반 관리자 전체 해제','모든 일반 관리자 권한을 해제합니다. 복구 불가.')">전체 해제</button>
-            </div>
-          </div>
-          <div class="tw">
-            <table><thead><tr><th>#</th><th>닉네임</th><th>권한</th><th>등록 방</th><th>액션</th></tr></thead>
-            <tbody id="adm-tbody"><tr class="empty"><td colspan="5">새로고침을 누르세요</td></tr></tbody></table>
-          </div>
-        </div>
-      </div>
-
-      <!-- 방 목록 -->
-      <div class="pg" id="pg-rooms">
-        <div class="pgh"><div class="pgt">방 목록</div><div class="pgs">봇이 배치된 모든 방 목록입니다.</div></div>
-        <div class="card">
-          <div class="sh">
-            <div class="ct" style="margin:0">🏠 방 목록</div>
-            <button class="btn bgh" onclick="loadRooms()">새로고침</button>
-          </div>
-          <div class="tw">
-            <table><thead><tr><th>#</th><th>방 ID</th><th>공지</th></tr></thead>
-            <tbody id="room-tbody"><tr class="empty"><td colspan="3">새로고침을 누르세요</td></tr></tbody></table>
-          </div>
-        </div>
-      </div>
-
-      <!-- 비밀번호 설정 -->
-      <div class="pg" id="pg-setpw">
-        <div class="pgh"><div class="pgt">비밀번호 설정</div><div class="pgs">대시보드 로그인 비밀번호를 변경합니다. 서버 관리자 전용.</div></div>
-        <div class="card">
-          <div class="ct">🔐 서버 관리자 비밀번호</div>
-          <div class="fg2" style="margin-bottom:10px"><div class="fl2">새 비밀번호</div><input class="fin2" id="spw1" type="password" placeholder="6자 이상" /></div>
-          <div class="fg2" style="margin-bottom:14px"><div class="fl2">확인</div><input class="fin2" id="spw2" type="password" placeholder="다시 입력" /></div>
-          <button class="btn bg" onclick="doSetPw('super')">변경</button>
-        </div>
-        <div class="card">
-          <div class="ct">🔑 방장 비밀번호</div>
-          <div class="fg2" style="margin-bottom:10px"><div class="fl2">새 비밀번호</div><input class="fin2" id="opw1" type="password" placeholder="6자 이상" /></div>
-          <div class="fg2" style="margin-bottom:14px"><div class="fl2">확인</div><input class="fin2" id="opw2" type="password" placeholder="다시 입력" /></div>
-          <button class="btn bb" onclick="doSetPw('owner')">변경</button>
-        </div>
-      </div>
-
-    </main>
+  <div class="hero-stats">
+    <div class="stat-item"><div class="stat-num" id="cnt1">0</div><div class="stat-label">명령어</div></div>
+    <div class="stat-item"><div class="stat-num" id="cnt2">0</div><div class="stat-label">기능 분류</div></div>
+    <div class="stat-item"><div class="stat-num" id="cnt3">0</div><div class="stat-label">안전 보호</div></div>
   </div>
-</div>
+</section>
 
-<!-- 모달 -->
-<div class="mo" id="modal">
-  <div class="mbox">
-    <div class="mt" id="m-title">확인</div>
-    <div class="ms" id="m-sub">계속하시겠습니까?</div>
-    <div class="ma">
-      <button class="btn bgh" onclick="closeModal()">취소</button>
-      <button class="btn br" id="m-ok" onclick="doModal()">실행</button>
+<div class="section-divider"></div>
+
+<!-- ══ INTRO ══ -->
+<section id="intro">
+  <div class="section-label">About</div>
+  <h2 class="section-title reveal">강력한 카카오 오픈채팅 봇</h2>
+  <p class="section-desc reveal">Chronos-X는 AI 대화, 멘션 감지, 입퇴장 기록, 채팅 통계까지 — 오픈채팅 운영에 필요한 모든 것을 하나로 제공합니다.</p>
+
+  <div class="feature-grid">
+    <div class="feature-card reveal">
+      <div class="feature-icon blue">🤖</div>
+      <div class="feature-name">Chronos AI</div>
+      <div class="feature-desc">Groq 기반 LLaMA 모델로 1:1 또는 단체 대화가 가능합니다. 대화 히스토리를 기억해 자연스러운 채팅을 즐겨보세요.</div>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon purple">🔔</div>
+      <div class="feature-name">멘션 감지</div>
+      <div class="feature-desc">자리를 비운 사이 누가 나를 불렀는지 자동 감지합니다. 복귀 시 알림을 받고 빠짐없이 확인하세요.</div>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon green">📊</div>
+      <div class="feature-name">채팅 통계</div>
+      <div class="feature-desc">월별·일별 채팅 랭킹과 시간대별 활동 그래프를 예쁜 차트로 확인할 수 있습니다.</div>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon orange">🛡️</div>
+      <div class="feature-name">멤버 관리</div>
+      <div class="feature-desc">입퇴장·강퇴 기록, 닉네임 변경 이력, 차단 시스템까지 운영자를 위한 완벽한 관리 도구를 제공합니다.</div>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon blue">🎮</div>
+      <div class="feature-name">게임 & 놀이</div>
+      <div class="feature-desc">타자 게임, 워들(5글자 영단어), 출석 체크 등 채팅방 활기를 불어넣는 다양한 미니게임을 즐기세요.</div>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon green">💰</div>
+      <div class="feature-name">금융 정보</div>
+      <div class="feature-desc">실시간 코인·주식 시세, 바이낸스 김치 프리미엄, 달러 환율까지 실시간으로 채팅창에서 확인하세요.</div>
     </div>
   </div>
-</div>
 
-<div id="toast"></div>
+  <div class="cmd-list reveal">
+    <div class="cmd-header">
+      <span style="color:var(--accent3)">⌘</span>
+      <h3>주요 명령어 목록</h3>
+    </div>
+    <div class="cmd-grid">
+      <div class="cmd-item"><span class="cmd-text">!ai [질문]</span><span class="cmd-desc">AI에게 물어보기</span></div>
+      <div class="cmd-item"><span class="cmd-text">!대화시작</span><span class="cmd-desc">1:1 AI 대화</span></div>
+      <div class="cmd-item"><span class="cmd-text">!타자게임</span><span class="cmd-desc">타자 대결 시작</span></div>
+      <div class="cmd-item"><span class="cmd-text">!워들</span><span class="cmd-desc">영단어 추측 게임</span></div>
+      <div class="cmd-item"><span class="cmd-text">!채팅순위</span><span class="cmd-desc">월 채팅 TOP 10</span></div>
+      <div class="cmd-item"><span class="cmd-text">!코인 [종목]</span><span class="cmd-desc">실시간 코인 시세</span></div>
+      <div class="cmd-item"><span class="cmd-text">!날씨 [지역]</span><span class="cmd-desc">날씨 정보 조회</span></div>
+      <div class="cmd-item"><span class="cmd-text">!정보</span><span class="cmd-desc">내 프로필/이력</span></div>
+      <div class="cmd-item"><span class="cmd-text">!출석</span><span class="cmd-desc">일일 출석 체크</span></div>
+      <div class="cmd-item"><span class="cmd-text">!뉴스</span><span class="cmd-desc">네이버 실시간 속보</span></div>
+      <div class="cmd-item"><span class="cmd-text">!ban / !unban</span><span class="cmd-desc">유저 차단/해제</span></div>
+      <div class="cmd-item"><span class="cmd-text">!가이드</span><span class="cmd-desc">전체 도움말</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ══ CONTACT ══ -->
+<section id="contact">
+  <div class="section-label">Contact</div>
+  <h2 class="section-title reveal">문의하기</h2>
+
+  <div class="contact-grid">
+    <div class="contact-info reveal">
+      <h3>봇 설치부터 커스텀까지<br>무엇이든 물어보세요.</h3>
+      <p>봇 설치 문의, 기능 요청, 버그 제보 등 어떤 내용이든 편하게 연락주세요. 빠르게 답변드리겠습니다.</p>
+      <div class="contact-links">
+        <a class="contact-link" href="https://open.kakao.com/me/Chronosadmin" target="_blank">
+          <div class="contact-link-icon">💬</div>
+          <div class="contact-link-text">
+            <strong>카카오톡 1:1 오픈채팅</strong>
+            <span>@Chronosadmin</span>
+          </div>
+          <div class="contact-link-arrow">›</div>
+        </a>
+        <a class="contact-link" href="https://open.kakao.com/o/g7BG0whi" target="_blank">
+          <div class="contact-link-icon">🤖</div>
+          <div class="contact-link-text">
+            <strong>봇 설치 오픈채팅</strong>
+            <span>Chronos-X 봇 설치 & 문의방</span>
+          </div>
+          <div class="contact-link-arrow">›</div>
+        </a>
+        <a class="contact-link" href="https://successful-piranha-e29.notion.site/Chronos-X-Bot-2f9dd672094780b1aa29e5b2429697b3" target="_blank">
+          <div class="contact-link-icon">📄</div>
+          <div class="contact-link-text">
+            <strong>이용약관 & 공식 문서</strong>
+            <span>Notion 페이지 확인</span>
+          </div>
+          <div class="contact-link-arrow">›</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="contact-form-wrap reveal">
+      <h3>📮 메시지 보내기</h3>
+      <div class="form-group">
+        <label>이름 / 닉네임</label>
+        <input type="text" id="cName" placeholder="홍길동">
+      </div>
+      <div class="form-group">
+        <label>문의 유형</label>
+        <select id="cType">
+          <option value="">선택해주세요</option>
+          <option>봇 설치 문의</option>
+          <option>기능 요청</option>
+          <option>버그 제보</option>
+          <option>커스텀 봇 제작</option>
+          <option>기타</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>내용</label>
+        <textarea id="cMsg" placeholder="문의 내용을 자세히 입력해주세요..."></textarea>
+      </div>
+      <button class="form-submit" onclick="submitContact()">✈ 메시지 전송</button>
+      <div class="form-msg" id="formMsg">✅ 메시지가 저장되었습니다! 카카오톡으로도 연락주시면 더 빠르게 답변드릴게요.</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ══ BLOG ══ -->
+<section id="blog">
+  <div class="section-label">Blog</div>
+  <h2 class="section-title reveal">업데이트 & 블로그</h2>
+
+  <!-- 관리자 로그인 -->
+  <div class="admin-area reveal" id="adminArea">
+    <input type="password" class="admin-input" id="adminPw" placeholder="관리자 비밀번호" onkeydown="if(event.key==='Enter')adminLogin()">
+    <button class="admin-btn" onclick="adminLogin()">로그인</button>
+    <span class="admin-status" id="adminStatus"></span>
+  </div>
+
+  <!-- 글쓰기 버튼 (관리자만) -->
+  <div class="blog-toolbar reveal">
+    <div class="blog-filter">
+      <button class="filter-btn active" onclick="filterPosts('all', this)">전체</button>
+      <button class="filter-btn" onclick="filterPosts('update', this)">업데이트</button>
+      <button class="filter-btn" onclick="filterPosts('notice', this)">공지</button>
+      <button class="filter-btn" onclick="filterPosts('tip', this)">팁</button>
+      <button class="filter-btn" onclick="filterPosts('log', this)">패치노트</button>
+    </div>
+    <button class="blog-write-btn" id="writeBtn" style="display:none;" onclick="toggleEditor()">
+      ✏️ 새 글 쓰기
+    </button>
+  </div>
+
+  <!-- 에디터 -->
+  <div class="post-editor" id="postEditor">
+    <div class="editor-header">
+      <h3>// 새 포스트 작성</h3>
+      <button class="editor-close" onclick="toggleEditor()">✕</button>
+    </div>
+    <div class="editor-cat-row">
+      <button class="cat-btn selected" onclick="selectCat(this,'update')">📦 업데이트</button>
+      <button class="cat-btn" onclick="selectCat(this,'notice')">📢 공지</button>
+      <button class="cat-btn" onclick="selectCat(this,'tip')">💡 팁</button>
+      <button class="cat-btn" onclick="selectCat(this,'log')">📋 패치노트</button>
+    </div>
+    <input class="editor-input editor-title" id="postTitle" placeholder="제목을 입력하세요...">
+    <input class="editor-input editor-tag-input" id="postTags" placeholder="태그 (쉼표 구분): AI, 봇, 업데이트">
+    <textarea class="editor-body" id="postBody" placeholder="본문 내용을 입력하세요. 마크다운은 지원되지 않지만 줄바꿈은 유지됩니다."></textarea>
+    <button class="editor-submit" onclick="submitPost()">🚀 게시하기</button>
+  </div>
+
+  <!-- 포스트 목록 -->
+  <div class="posts-grid" id="postsGrid"></div>
+</section>
+
+<footer>
+  <div class="footer-logo">CHRONOS-X</div>
+  <div class="footer-copy">© 2025 Chronos Bot. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="#intro">소개</a>
+    <a href="#contact">문의</a>
+    <a href="#blog">블로그</a>
+    <a href="https://open.kakao.com/o/g7BG0whi" target="_blank">설치</a>
+  </div>
+</footer>
 
 <script>
-// ════════════════════════════════════════
-//  전역 상태
-// ════════════════════════════════════════
-const S = {
-  role: 'super',
-  pw: '',          // 로그인 시 입력한 비밀번호 (API 요청마다 자동 첨부)
-  roomId: '',
-  apiUrl: '',      // 봇 서버 http://IP:9090
-  modalAction: null
-};
+/* ══════════════════
+   CANVAS PARTICLES
+══════════════════ */
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
 
-// ════════════════════════════════════════
-//  유틸
-// ════════════════════════════════════════
-let _tid;
-function toast(msg, type='ok'){
-  const el=document.getElementById('toast');
-  el.textContent=msg; el.className='on '+type;
-  clearTimeout(_tid); _tid=setTimeout(()=>el.className='',3000);
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
 }
+resize();
+window.addEventListener('resize', resize);
 
-function maskId(id){
-  const s=String(id||'');
-  return s.length<=4?'****':s.slice(0,4)+'****';
-}
+function randomBetween(a, b) { return a + Math.random() * (b - a); }
 
-function setErr(msg){
-  const el=document.getElementById('lerr');
-  el.textContent=msg;
-  setTimeout(()=>el.textContent='',4000);
-}
-
-// ════════════════════════════════════════
-//  API 호출 — 핵심
-// ════════════════════════════════════════
-async function call(path, body=null, skipAuth=false){
-  // skipAuth=true 이면 인증 정보 없이 전송 (로그인 전용)
-  const payload = skipAuth
-    ? (body || {})
-    : {
-        role:     S.role,
-        password: S.pw,
-        ...(S.roomId ? { roomId: S.roomId } : {}),
-        ...(body || {})
-      };
-
-  try {
-    const res = await fetch(S.apiUrl + path, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload)
-    });
-
-    let json;
-    const text = await res.text();
-    try { json = JSON.parse(text); }
-    catch { json = { success: res.ok }; }
-
-    return { ok: res.ok, status: res.status, data: json };
-
-  } catch(e) {
-    return { ok: false, status: 0, data: { success: false, error: '서버 연결 실패: '+e.message } };
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = randomBetween(0, W);
+    this.y = randomBetween(0, H);
+    this.size = randomBetween(0.5, 2);
+    this.speed = randomBetween(0.1, 0.4);
+    this.opacity = randomBetween(0.1, 0.5);
+    this.color = Math.random() > 0.6 ? '#00d2ff' : '#06ffa5';
+  }
+  update() {
+    this.y -= this.speed;
+    if (this.y < -5) this.reset(), this.y = H;
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.globalAlpha = this.opacity;
+    ctx.fill();
+    ctx.globalAlpha = 1;
   }
 }
 
-// ════════════════════════════════════════
-//  로그인
-// ════════════════════════════════════════
-function setRole(r){
-  S.role=r;
-  document.getElementById('ts').classList.toggle('on', r==='super');
-  document.getElementById('to').classList.toggle('on', r==='owner');
-  document.getElementById('sf').style.display = r==='super'?'block':'none';
-  document.getElementById('of').style.display = r==='owner'?'block':'none';
+for (let i = 0; i < 100; i++) particles.push(new Particle());
+
+function animBg() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animBg);
+}
+animBg();
+
+/* ══════════════════
+   COUNTER ANIMATION
+══════════════════ */
+function countUp(el, target, duration = 1200) {
+  let start = 0, step = target / (duration / 16);
+  const t = setInterval(() => {
+    start = Math.min(start + step, target);
+    el.textContent = Math.floor(start);
+    if (start >= target) clearInterval(t);
+  }, 16);
 }
 
-async function doLogin(){
-  // API URL = 이 HTML 을 서빙하는 서버의 호스트 + 포트 9090
-  S.apiUrl = location.protocol+'//'+location.hostname+':9090';
+let countersStarted = false;
+const counterObserver = new IntersectionObserver(entries => {
+  if (!countersStarted && entries.some(e => e.isIntersecting)) {
+    countersStarted = true;
+    countUp(document.getElementById('cnt1'), 40);
+    countUp(document.getElementById('cnt2'), 8);
+    countUp(document.getElementById('cnt3'), 24);
+  }
+}, { threshold: 0.3 });
+counterObserver.observe(document.getElementById('hero'));
 
-  const btn = document.getElementById('lbtn');
-  btn.disabled=true; btn.textContent='접속 중...';
+/* ══════════════════
+   REVEAL ON SCROLL
+══════════════════ */
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
-  try {
-    if(S.role === 'super'){
-      const pw = document.getElementById('spw').value.trim();
-      if(!pw){ setErr('비밀번호를 입력하세요.'); return; }
+/* ══════════════════
+   TOAST
+══════════════════ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
 
-      S.pw = pw;
-      const { ok, status, data } = await call('/api/login', { role:'super', password:pw }, true);
+/* ══════════════════
+   CONTACT FORM
+══════════════════ */
+function submitContact() {
+  const name = document.getElementById('cName').value.trim();
+  const type = document.getElementById('cType').value;
+  const msg = document.getElementById('cMsg').value.trim();
+  if (!name || !type || !msg) { showToast('⚠️ 모든 항목을 입력해주세요.'); return; }
+  document.getElementById('formMsg').classList.add('success');
+  document.getElementById('cName').value = '';
+  document.getElementById('cType').value = '';
+  document.getElementById('cMsg').value = '';
+  showToast('✅ 문의가 접수되었습니다!');
+}
 
-      if(ok && data.success){
-        enterApp('super');
-      } else {
-        S.pw='';
-        setErr(data.error || (status===401?'비밀번호가 올바르지 않습니다.':'서버 오류: '+status));
+/* ══════════════════
+   BLOG DATA (localStorage)
+══════════════════ */
+const BLOG_KEY = 'chronos_blog_posts';
+const ADMIN_PW = 'chronos2025'; // ← 비밀번호 변경 가능
+
+let posts = [];
+let isAdmin = false;
+let selectedCat = 'update';
+let currentFilter = 'all';
+
+function loadPosts() {
+  try { posts = JSON.parse(localStorage.getItem(BLOG_KEY)) || []; }
+  catch { posts = []; }
+  if (posts.length === 0) {
+    posts = [
+      {
+        id: 1,
+        cat: 'update',
+        title: 'Chronos-X Bot Ver 1.5 출시 🎉',
+        body: 'Chronos-X 봇의 새로운 버전 1.5가 출시되었습니다!\n\n주요 변경사항:\n- Chronos Malware Analyzer 통합\n- 첫중현 기능 추가 (입장/퇴장/강퇴 카드 디자인 개선)\n- AI 대화 모드 개선 (단체/1:1 구분)\n- 채팅 통계 그래프 디자인 업그레이드\n- 멘션 감지 시스템 안정화\n\n앞으로도 더 좋은 기능으로 찾아오겠습니다 :)',
+        tags: ['업데이트', 'v1.5', '출시'],
+        date: '2025-01-10',
+        views: 128
+      },
+      {
+        id: 2,
+        cat: 'notice',
+        title: '봇 설치 안내 및 이용약관',
+        body: 'Chronos-X 봇 설치는 아래 링크를 통해 진행해주세요.\nhttps://open.kakao.com/o/g7BG0whi\n\n이용약관은 Notion 페이지에서 확인 가능합니다.\n\n관리자 문의: !관리자연결 명령어 또는 https://open.kakao.com/me/Chronosadmin',
+        tags: ['공지', '설치', '안내'],
+        date: '2025-01-01',
+        views: 87
+      },
+      {
+        id: 3,
+        cat: 'tip',
+        title: '!ai 명령어 100% 활용하기',
+        body: '!ai 명령어는 Groq LLaMA 모델을 기반으로 동작합니다.\n\n🔹 단발 질문: !ai 파이썬이란?\n🔹 1:1 대화: !대화시작 → 명령어 없이 자유롭게 채팅\n🔹 단체 대화: !단체대화시작 → 방 전체가 AI와 대화\n\n대화 히스토리가 최대 10턴 유지되어 자연스러운 흐름이 가능합니다.\n종료는 !대화종료 를 입력하세요.',
+        tags: ['팁', 'AI', '사용법'],
+        date: '2025-01-05',
+        views: 54
       }
-
-    } else {
-      const pw  = document.getElementById('opw').value.trim();
-      const rid = document.getElementById('rid').value.trim();
-      if(!pw){ setErr('비밀번호를 입력하세요.'); return; }
-      if(!rid){ setErr('방 ID를 입력하세요.'); return; }
-
-      S.pw=pw; S.roomId=rid;
-      const { ok, status, data } = await call('/api/login', { role:'owner', password:pw, roomId:rid }, true);
-
-      if(ok && data.success){
-        enterApp('owner');
-      } else {
-        S.pw=''; S.roomId='';
-        setErr(data.error || (status===401?'비밀번호가 올바르지 않습니다.':'서버 오류: '+status));
-      }
-    }
-  } finally {
-    btn.disabled=false; btn.textContent='[ 접속 ]';
+    ];
+    savePosts();
   }
 }
 
-function enterApp(role){
-  document.getElementById('login').style.display='none';
-  document.getElementById('app').classList.add('on');
-
-  const chip = document.getElementById('hchip');
-  chip.textContent = role==='super'?'👑 서버 관리자':'🏠 방장';
-  chip.className='rchip '+(role==='super'?'super':'owner');
-
-  document.getElementById('hdesc').textContent =
-    role==='super'
-      ?'서버 관리자로 접속했습니다. 모든 기능을 사용할 수 있습니다.'
-      :`방장으로 접속했습니다. 방 ID: ${S.roomId}`;
-
-  if(role==='owner'){
-    document.getElementById('supernav').style.display='none';
-    // 공지: 전체방 옵션 제거
-    const sel=document.getElementById('ntc-scope');
-    sel.innerHTML=`<option value="room">내 방 (${S.roomId})</option>`;
-    sel.disabled=true;
-    document.getElementById('ntc-rid').value=S.roomId;
-    document.getElementById('ntc-sub').textContent='자신의 방에 공지를 전송합니다.';
-  }
-
-  loadStats();
+function savePosts() {
+  localStorage.setItem(BLOG_KEY, JSON.stringify(posts));
 }
 
-function doLogout(){
-  document.getElementById('login').style.display='flex';
-  document.getElementById('app').classList.remove('on');
-  document.getElementById('supernav').style.display='block';
-  S.role='super'; S.pw=''; S.roomId=''; S.apiUrl=''; S.modalAction=null;
-  // 공지 옵션 복원
-  const sel=document.getElementById('ntc-scope');
-  sel.innerHTML='<option value="all">전체 방</option><option value="room">특정 방 ID</option>';
-  sel.disabled=false;
-  setRole('super');
-}
-
-// ════════════════════════════════════════
-//  내비게이션
-// ════════════════════════════════════════
-function go(name, el){
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
-  document.getElementById('pg-'+name).classList.add('on');
-  if(el) el.classList.add('on');
-  else document.querySelectorAll('.ni').forEach(n=>{if(n.dataset.p===name)n.classList.add('on');});
-}
-
-// ════════════════════════════════════════
-//  통계
-// ════════════════════════════════════════
-async function loadStats(){
-  const { ok, data } = await call('/api/stats');
-  if(ok){
-    document.getElementById('st-rooms').textContent  = data.rooms  ?? '?';
-    document.getElementById('st-admins').textContent = data.admins ?? '?';
-    document.getElementById('st-bans').textContent   = data.bans   ?? '?';
-  }
-}
-
-// ════════════════════════════════════════
-//  밴 관리
-// ════════════════════════════════════════
-async function doBan(){
-  const tgt = document.getElementById('ban-tgt').value.trim();
-  const rsn = document.getElementById('ban-rsn').value.trim() || '사유 없음';
-  if(!tgt){ toast('차단할 유저를 입력하세요.','er'); return; }
-
-  const { ok, data } = await call('/api/ban', { target:tgt, reason:rsn });
-  if(ok && data.success){
-    toast(`✅ ${tgt} 차단 완료`);
-    document.getElementById('ban-tgt').value='';
-    document.getElementById('ban-rsn').value='';
-    loadBans();
+/* ══════════════════
+   ADMIN LOGIN
+══════════════════ */
+function adminLogin() {
+  const pw = document.getElementById('adminPw').value;
+  if (pw === ADMIN_PW) {
+    isAdmin = true;
+    document.getElementById('adminStatus').textContent = '✅ 관리자 모드';
+    document.getElementById('adminPw').style.display = 'none';
+    document.querySelector('[onclick="adminLogin()"]').style.display = 'none';
+    document.getElementById('writeBtn').style.display = 'flex';
+    document.getElementById('postsGrid').classList.add('is-admin');
+    renderPosts();
+    showToast('👑 관리자로 로그인되었습니다.');
   } else {
-    toast(data.error||'차단 실패','er');
+    showToast('❌ 비밀번호가 올바르지 않습니다.');
   }
 }
 
-async function doUnban(){
-  const tgt = document.getElementById('uban-tgt').value.trim();
-  if(!tgt){ toast('해제할 유저를 입력하세요.','er'); return; }
+/* ══════════════════
+   EDITOR
+══════════════════ */
+function toggleEditor() {
+  const ed = document.getElementById('postEditor');
+  ed.classList.toggle('visible');
+}
 
-  const { ok, data } = await call('/api/unban', { target:tgt });
-  if(ok && data.success){
-    toast(`✅ ${tgt} 차단 해제`);
-    document.getElementById('uban-tgt').value='';
-    loadBans();
-  } else {
-    toast(data.error||'해제 실패','er');
+function selectCat(btn, cat) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedCat = cat;
+}
+
+function submitPost() {
+  if (!isAdmin) { showToast('⛔ 관리자만 글을 작성할 수 있습니다.'); return; }
+  const title = document.getElementById('postTitle').value.trim();
+  const body = document.getElementById('postBody').value.trim();
+  const tagsRaw = document.getElementById('postTags').value.trim();
+  if (!title || !body) { showToast('⚠️ 제목과 내용을 입력해주세요.'); return; }
+  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const newPost = {
+    id: Date.now(),
+    cat: selectedCat,
+    title, body, tags,
+    date: new Date().toISOString().slice(0, 10),
+    views: 0
+  };
+  posts.unshift(newPost);
+  savePosts();
+  renderPosts();
+  document.getElementById('postTitle').value = '';
+  document.getElementById('postBody').value = '';
+  document.getElementById('postTags').value = '';
+  toggleEditor();
+  showToast('🚀 포스트가 게시되었습니다!');
+}
+
+/* ══════════════════
+   RENDER POSTS
+══════════════════ */
+const catMap = { update: 'update', notice: 'notice', tip: 'tip', log: 'log' };
+const catLabel = { update: 'UPDATE', notice: 'NOTICE', tip: 'TIP', log: 'PATCH' };
+
+function filterPosts(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPosts();
+}
+
+function renderPosts() {
+  const grid = document.getElementById('postsGrid');
+  if (isAdmin) grid.classList.add('is-admin');
+  const filtered = currentFilter === 'all' ? posts : posts.filter(p => p.cat === currentFilter);
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="no-posts"><div style="font-size:40px">📭</div><p>아직 게시글이 없습니다.</p></div>';
+    return;
+  }
+  grid.innerHTML = filtered.map(p => `
+    <div class="post-card" onclick="openPost(${p.id})">
+      <button class="post-delete" onclick="deletePost(event, ${p.id})">✕</button>
+      <span class="post-cat ${catMap[p.cat] || 'update'}">${catLabel[p.cat] || 'POST'}</span>
+      <div class="post-title">${escHtml(p.title)}</div>
+      <div class="post-preview">${escHtml(p.body)}</div>
+      <div class="post-meta">
+        <div class="post-meta-left">
+          <span>📅 ${p.date}</span>
+          ${p.tags && p.tags.length ? `<span>• ${p.tags.slice(0,2).map(t => '#'+t).join(' ')}</span>` : ''}
+        </div>
+        <div class="post-views">👁 ${p.views}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function deletePost(e, id) {
+  e.stopPropagation();
+  if (!isAdmin) return;
+  if (!confirm('이 글을 삭제할까요?')) return;
+  posts = posts.filter(p => p.id !== id);
+  savePosts();
+  renderPosts();
+  showToast('🗑️ 삭제되었습니다.');
+}
+
+function openPost(id) {
+  const post = posts.find(p => p.id === id);
+  if (!post) return;
+  post.views = (post.views || 0) + 1;
+  savePosts();
+  renderPosts();
+  const mc = document.getElementById('modalContent');
+  mc.innerHTML = `
+    <span class="post-cat ${catMap[post.cat] || 'update'}" style="margin-bottom:14px;display:inline-block">${catLabel[post.cat] || 'POST'}</span>
+    <div class="modal-post-title">${escHtml(post.title)}</div>
+    <div class="modal-meta">
+      <span>📅 ${post.date}</span>
+      <span>👁 ${post.views}회</span>
+      ${post.tags && post.tags.length ? `<span>${post.tags.map(t=>'#'+t).join(' ')}</span>` : ''}
+    </div>
+    <div class="modal-divider"></div>
+    <div class="modal-body">${escHtml(post.body)}</div>
+  `;
+  document.getElementById('postModal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('postModal')) {
+    document.getElementById('postModal').classList.remove('open');
   }
 }
 
-async function loadBans(){
-  const { ok, data } = await call('/api/banlist');
-  const tb = document.getElementById('ban-tbody');
-  if(ok && data.list){
-    if(!data.list.length){
-      tb.innerHTML='<tr class="empty"><td colspan="6">차단된 유저가 없습니다.</td></tr>';
-    } else {
-      tb.innerHTML = data.list.map((u,i)=>`
-        <tr>
-          <td>${i+1}</td>
-          <td>${u.name||'알수없음'}</td>
-          <td class="tm">${maskId(u.id)}</td>
-          <td>${u.reason||'—'}</td>
-          <td style="font-size:12px;color:var(--t2)">${u.admin||'—'}</td>
-          <td><button class="btn bgh" style="padding:4px 10px;font-size:10px" onclick="quickUnban('${u.id}','${u.name||u.id}')">해제</button></td>
-        </tr>`).join('');
-    }
-  } else {
-    tb.innerHTML=`<tr class="empty"><td colspan="6">${data.error||'로드 실패'}</td></tr>`;
-  }
-}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(null); });
 
-async function quickUnban(id, name){
-  const { ok, data } = await call('/api/unban', { target:id });
-  toast(ok&&data.success?`✅ ${name} 해제`:(data.error||'해제 실패'), ok&&data.success?'ok':'er');
-  loadBans();
-}
-
-// ════════════════════════════════════════
-//  공지
-// ════════════════════════════════════════
-document.getElementById('ntc-scope').addEventListener('change', function(){
-  document.getElementById('ntc-rid-grp').style.display = this.value==='room'?'flex':'none';
-});
-
-async function doNotice(){
-  const msg   = document.getElementById('ntc-msg').value.trim();
-  const scope = document.getElementById('ntc-scope').value;
-  const rid   = document.getElementById('ntc-rid').value.trim();
-  if(!msg){ toast('내용을 입력하세요.','er'); return; }
-  if(scope==='room'&&!rid){ toast('방 ID를 입력하세요.','er'); return; }
-
-  const { ok, data } = await call('/api/notice', { content:msg, scope, roomId:rid||undefined });
-  if(ok && data.success){
-    toast(`✅ 공지 전송 완료 (${data.sent||0}개 방)`);
-    document.getElementById('ntc-msg').value='';
-  } else {
-    toast(data.error||'전송 실패','er');
-  }
-}
-
-// ════════════════════════════════════════
-//  관리자 임명
-// ════════════════════════════════════════
-async function doAddAdmin(){
-  const tgt = document.getElementById('adm-tgt').value.trim();
-  if(!tgt){ toast('임명할 유저를 입력하세요.','er'); return; }
-
-  const { ok, data } = await call('/api/addadmin', { target:tgt });
-  if(ok && data.success){
-    toast(`✅ ${tgt} 관리자 임명 완료`);
-    document.getElementById('adm-tgt').value='';
-  } else {
-    toast(data.error||'임명 실패','er');
-  }
-}
-
-// ════════════════════════════════════════
-//  관리자 목록 (관리자 전용)
-// ════════════════════════════════════════
-async function loadAdmins(){
-  const { ok, data } = await call('/api/adminlist');
-  const tb = document.getElementById('adm-tbody');
-  if(ok && data.list){
-    if(!data.list.length){
-      tb.innerHTML='<tr class="empty"><td colspan="5">등록된 관리자가 없습니다.</td></tr>';
-    } else {
-      tb.innerHTML = data.list.map((a,i)=>`
-        <tr>
-          <td>${i+1}</td>
-          <td>${a.name||'—'}</td>
-          <td><span class="badge ${a.role==='super'?'bsup':'badm'}">${a.role==='super'?'서버관리자':'일반관리자'}</span></td>
-          <td class="tm">${a.room||'—'}</td>
-          <td>${a.role!=='super'
-            ?`<button class="btn br" style="padding:4px 10px;font-size:10px" onclick="removeAdmin('${a.id}','${a.name||a.id}')">해제</button>`
-            :'<span style="font-size:11px;color:var(--t2)">보호됨</span>'
-          }</td>
-        </tr>`).join('');
-    }
-  } else {
-    tb.innerHTML=`<tr class="empty"><td colspan="5">${data.error||'로드 실패'}</td></tr>`;
-  }
-}
-
-async function removeAdmin(id, name){
-  const { ok, data } = await call('/api/removeadmin', { target:id });
-  toast(ok&&data.success?`✅ ${name} 관리자 해제`:(data.error||'해제 실패'), ok&&data.success?'ok':'er');
-  loadAdmins();
-}
-
-// ════════════════════════════════════════
-//  방 목록 (관리자 전용)
-// ════════════════════════════════════════
-async function loadRooms(){
-  const { ok, data } = await call('/api/rooms');
-  const tb = document.getElementById('room-tbody');
-  if(ok && data.rooms){
-    if(!data.rooms.length){
-      tb.innerHTML='<tr class="empty"><td colspan="3">방이 없습니다.</td></tr>';
-    } else {
-      tb.innerHTML = data.rooms.map((r,i)=>`
-        <tr>
-          <td>${i+1}</td>
-          <td class="tm">${r}</td>
-          <td><button class="btn bgh" style="padding:4px 10px;font-size:10px" onclick="quickNotice('${r}')">공지</button></td>
-        </tr>`).join('');
-    }
-  } else {
-    tb.innerHTML=`<tr class="empty"><td colspan="3">${data.error||'로드 실패'}</td></tr>`;
-  }
-}
-
-function quickNotice(rid){
-  go('notice', null);
-  document.getElementById('ntc-scope').value='room';
-  document.getElementById('ntc-rid-grp').style.display='flex';
-  document.getElementById('ntc-rid').value=rid;
-  toast('방 ID 설정됨. 내용을 입력하세요.');
-}
-
-// ════════════════════════════════════════
-//  비밀번호 변경 (관리자 전용)
-// ════════════════════════════════════════
-async function doSetPw(who){
-  const p1 = document.getElementById(who==='super'?'spw1':'opw1').value.trim();
-  const p2 = document.getElementById(who==='super'?'spw2':'opw2').value.trim();
-  if(!p1){ toast('새 비밀번호를 입력하세요.','er'); return; }
-  if(p1!==p2){ toast('비밀번호가 일치하지 않습니다.','er'); return; }
-  if(p1.length<6){ toast('6자 이상이어야 합니다.','er'); return; }
-
-  const { ok, data } = await call('/api/setpw', { target:who, newpw:p1 });
-  if(ok && data.success){
-    toast(`✅ ${who==='super'?'관리자':'방장'} 비밀번호 변경 완료`);
-    // 현재 세션 비밀번호도 업데이트
-    if(S.role===who) S.pw=p1;
-    document.getElementById(who==='super'?'spw1':'opw1').value='';
-    document.getElementById(who==='super'?'spw2':'opw2').value='';
-  } else {
-    toast(data.error||'변경 실패','er');
-  }
-}
-
-// ════════════════════════════════════════
-//  모달 (위험 작업 확인)
-// ════════════════════════════════════════
-function openModal(action, title, sub){
-  S.modalAction=action;
-  document.getElementById('m-title').textContent=title;
-  document.getElementById('m-sub').textContent=sub;
-  document.getElementById('modal').classList.add('on');
-}
-function closeModal(){ document.getElementById('modal').classList.remove('on'); S.modalAction=null; }
-
-async function doModal(){
-  const action = S.modalAction;
-  closeModal();
-  if(!action) return;
-
-  if(action==='restart'){
-    const { ok, data } = await call('/api/restart');
-    toast(ok&&data.success?'✅ 재시작 명령 전송됨':(data.error||'실패'),'ok');
-
-  } else if(action==='clearadmins'){
-    const { ok, data } = await call('/api/clearadmins');
-    toast(ok&&data.success?'✅ 일반 관리자 전체 해제':(data.error||'실패'), ok&&data.success?'ok':'er');
-    loadAdmins();
-  }
-}
-
-// ════════════════════════════════════════
-//  키보드
-// ════════════════════════════════════════
-document.addEventListener('keydown', e=>{
-  if(e.key==='Enter' && document.getElementById('login').style.display!=='none'){
-    doLogin();
-  }
-  if(e.key==='Escape') closeModal();
-});
-
-// 페이지 로드 시 API URL 미리 표시 (디버그용)
-window.addEventListener('load', ()=>{
-  console.log('[Chronos-X] 대시보드 로드됨. 연결 서버:', location.protocol+'//'+location.hostname+':9090');
-});
+/* ══════════════════
+   INIT
+══════════════════ */
+loadPosts();
+renderPosts();
 </script>
 </body>
 </html>
